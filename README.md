@@ -1,5 +1,34 @@
-# Vue 3 + Vite
+# foOlio
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Portfolio moderne Vue 3
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+Ce projet est un portfolio personnel développé avec Vue 3 et Vite, pensé pour présenter des projets de manière immersive et responsive.
+
+## Fonctionnalités principales
+- Interface responsive mobile-first
+- Ajout de projets via une interface privée
+- Animations GSAP et transitions fluides
+- Navigation dynamique
+- Stockage local des projets personnalisés
+
+## Structure
+- Hero d’accueil avec message fort
+- Section manifeste (approche)
+- Grille de projets dynamiques
+- Section contact
+
+## Installation
+```bash
+npm install
+npm run dev
+```
+
+## Déploiement
+```bash
+npm run build
+```
+
+## Auteur
+[budCmoi](https://github.com/budCmoi)
+
+---
