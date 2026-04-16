@@ -4,7 +4,7 @@ import { findProjectById, privateStudioPath } from '@/composables/useProjects'
 const homeTitle = 'Mohamed Ali | Portfolio frontend créatif'
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',

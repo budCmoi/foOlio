@@ -36,6 +36,17 @@ npm run dev
 npm run build
 ```
 
+### Render
+
+Le projet est prêt pour un déploiement Render en site statique via le fichier render.yaml à la racine.
+
+- Build command : npm ci --include=dev && npm run build
+- Publish directory : dist
+- Réécriture SPA : /* vers /index.html
+- Version Node : 22.22.0 sur Render, avec compatibilité déclarée dans package.json
+
+Si le service Render existe déjà, il doit être resynchronisé avec le dépôt ou relancé depuis le dashboard Render pour prendre en compte cette configuration.
+
 ## Auteur
 [budCmoi](https://github.com/budCmoi)
 
