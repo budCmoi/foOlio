@@ -31,25 +31,22 @@ const currentYear = new Date().getFullYear()
 .site-footer {
   position: relative;
   z-index: 2;
-  width: min(100%, var(--content-max, 1320px));
-  margin: 0 auto;
+  width: 100%;
   margin-top: auto;
-  padding: 0 clamp(1rem, 3vw, 1.8rem) clamp(1.2rem, 3vw, 2rem);
+  padding: 0 0 0.85rem;
   flex-shrink: 0;
 }
 
 .site-footer__inner {
+  width: min(100%, var(--content-max, 1320px));
+  margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 1fr));
-  gap: 1.4rem;
+  gap: 1rem;
   align-items: end;
-  padding: 1.4rem clamp(1rem, 3vw, 1.6rem);
-  border: 1px solid rgba(17, 17, 13, 0.08);
-  border-radius: calc(var(--radius-lg) + 0.1rem);
-  background: rgba(21, 22, 16, 0.92);
-  color: var(--text-inverse, #f7f2e9);
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(10px);
+  padding: 0.9rem clamp(1rem, 3vw, 1.8rem) 0;
+  border-top: 1px solid rgba(17, 17, 13, 0.12);
+  color: var(--text, #151610);
 }
 
 .site-footer__brand,
@@ -61,22 +58,23 @@ const currentYear = new Date().getFullYear()
 
 .site-footer__eyebrow,
 .site-footer__meta span {
-  font-size: 0.72rem;
+  font-size: 0.58rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(247, 242, 233, 0.62);
+  color: rgba(17, 17, 13, 0.52);
 }
 
 .site-footer__brand h2 {
   font-family: 'Syne', sans-serif;
-  font-size: clamp(1.35rem, 2vw, 2rem);
-  line-height: 0.98;
+  font-size: clamp(1rem, 1.4vw, 1.25rem);
+  line-height: 1;
 }
 
 .site-footer__brand p,
 .site-footer__links a {
-  color: rgba(247, 242, 233, 0.82);
-  line-height: 1.6;
+  color: rgba(17, 17, 13, 0.88);
+  line-height: 1.45;
+  font-size: 0.74rem;
 }
 
 .site-footer__links {
@@ -84,12 +82,11 @@ const currentYear = new Date().getFullYear()
 }
 
 .site-footer__links a {
-  transition: color 0.25s ease, transform 0.25s ease;
+  transition: color 0.25s ease;
 }
 
 .site-footer__links a:hover {
-  color: rgba(247, 242, 233, 1);
-  transform: translateX(4px);
+  color: var(--text, #151610);
 }
 
 .site-footer__meta {
@@ -100,6 +97,8 @@ const currentYear = new Date().getFullYear()
 @media (max-width: 820px) {
   .site-footer__inner {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding-top: 0.8rem;
   }
 
   .site-footer__links,
