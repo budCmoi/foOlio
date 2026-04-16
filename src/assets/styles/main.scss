@@ -773,8 +773,9 @@ figure {
 
 .hero__copy {
   display: grid;
-  gap: 1.4rem;
-  height: 80vh;
+  align-content: center;
+  gap: 1.2rem;
+  height: 70vh;
   max-width: 46rem;
 }
 
@@ -810,10 +811,38 @@ figure {
   min-height: 38rem;
   padding: 2rem;
   overflow: hidden;
+  isolation: isolate;
   border-radius: calc(var(--radius-lg) + 0.4rem);
   border: 1px solid rgba(17, 17, 13, 0.08);
-  background: rgba(255, 255, 255, 0.5);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.48)),
+    radial-gradient(circle at 85% 15%, rgba(215, 255, 118, 0.24), rgba(215, 255, 118, 0) 38%),
+    rgba(255, 255, 255, 0.5);
   box-shadow: var(--shadow);
+  will-change: transform;
+}
+
+.hero__visual::before,
+.hero__visual::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.hero__visual::before {
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.08) 42%, rgba(255, 255, 255, 0) 72%);
+  opacity: 0.9;
+}
+
+.hero__visual::after {
+  left: 8%;
+  bottom: 8%;
+  width: 14rem;
+  height: 14rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0) 72%);
+  opacity: 0.72;
 }
 
 .hero__orb {
@@ -1335,6 +1364,17 @@ figure {
   justify-content: flex-start;
 }
 
+.studio-panel--sidebar .studio-project-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 0.2rem;
+}
+
+.studio-panel--sidebar .studio-empty {
+  flex: 1 1 auto;
+}
+
 .studio-panel__heading {
   display: grid;
   gap: 0.9rem;
@@ -1545,6 +1585,39 @@ figure {
   gap: 0.45rem;
 }
 
+.studio-sidebar__footer {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(17, 17, 13, 0.08);
+}
+
+.studio-sidebar__footer strong {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.98rem;
+  letter-spacing: -0.04em;
+}
+
+.studio-sidebar__footer p,
+.studio-sidebar__footer a,
+.studio-sidebar__footer span {
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+
+.studio-sidebar__footer a {
+  color: var(--text);
+}
+
+.studio-sidebar__eyebrow {
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
 .studio-image-card__body p,
 .studio-project-item__copy p {
   word-break: break-word;
@@ -1611,6 +1684,11 @@ figure {
     position: static;
     height: auto;
     overflow: visible;
+  }
+
+  .studio-panel--sidebar .studio-project-list {
+    overflow: visible;
+    padding-right: 0;
   }
 }
 
@@ -2123,6 +2201,58 @@ figure {
   .studio-image-card__actions,
   .studio-project-item__actions {
     display: grid;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1080px) {
+  .hero__grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+  }
+
+  .hero__copy {
+    width: 100%;
+    max-width: 46rem;
+    height: auto;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .hero__title {
+    font-size: clamp(2.2rem, 6vw, 3.3rem);
+    line-height: 1.02;
+  }
+
+  .hero__lead {
+    max-width: 100%;
+    margin-inline: auto;
+    font-size: 0.98rem;
+  }
+
+  .hero__actions {
+    width: auto;
+    max-width: 100%;
+    margin-inline: auto;
+    justify-content: center;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  .hero__actions .button {
+    width: 13.5rem;
+    min-width: 13.5rem;
+    flex: 0 0 13.5rem;
+    max-width: 13.5rem;
+    min-height: 2.2rem;
+    padding: 0.48rem 0.78rem;
+    font-size: 0.72rem;
+  }
+
+  .hero__visual {
+    min-height: auto;
   }
 }
 

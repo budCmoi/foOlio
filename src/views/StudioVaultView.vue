@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import MagneticLink from '@/components/MagneticLink.vue'
+import { siteProfile } from '@/data/projects'
 import {
   addCustomProject,
   createProjectSlug,
@@ -11,6 +12,8 @@ import {
   updateCustomProject,
   useProjects,
 } from '@/composables/useProjects'
+
+const currentYear = new Date().getFullYear()
 
 function createEmptyForm() {
   return {
@@ -409,6 +412,14 @@ async function handleImport(event) {
         <p v-else class="studio-empty">
           Quand tu ajoutes ton premier projet ici, il apparaitra automatiquement sur la page d'accueil et dans son URL detail.
         </p>
+
+        <div class="studio-sidebar__footer">
+          <p class="studio-sidebar__eyebrow">foOlio / Footer</p>
+          <strong>{{ siteProfile.name }}</strong>
+          <p>{{ siteProfile.role }} · {{ siteProfile.location }}</p>
+          <a href="mailto:hello@foolio.dev">hello@foolio.dev</a>
+          <span>© {{ currentYear }} foOlio</span>
+        </div>
       </aside>
     </section>
   </main>
