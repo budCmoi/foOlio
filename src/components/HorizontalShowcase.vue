@@ -1,13 +1,11 @@
 <script setup>
-import { onMounted, ref, computed, nextTick } from 'vue'
-import { gsap, isMobileViewport, isReducedMotion, useGSAPContext } from '@/composables/useGSAP'
-
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { gsap } from '@/composables/useGSAP'
 
 const root = ref(null)
+const pin = ref(null)
 const track = ref(null)
-const { add } = useGSAPContext(root)
 
-// Duplicate panels for infinite loop
 const panels = [
   {
     index: '01',
@@ -29,42 +27,132 @@ const panels = [
   },
 ]
 
-const allPanels = computed(() => [...panels, ...panels])
+let sliderTween = null
+let resizeFrame = 0
+let resizeHandler = null
+let resizeObserver = null
+let loopClones = []
 
-onMounted(async () => {
-  // Mobile/reduced motion: fade-in only
-  if (isMobileViewport() || isReducedMotion()) {
-    gsap.from('.services-rail__panel', {
-      y: 40,
-      autoAlpha: 0,
-      stagger: 0.1,
-      duration: 0.7,
-    })
-    return
+function removeLoopClones() {
+  loopClones.forEach((clone) => clone.remove())
+  loopClones = []
+}
+
+function destroySlider() {
+  if (resizeFrame) {
+    cancelAnimationFrame(resizeFrame)
+    resizeFrame = 0
   }
 
-  await nextTick()
-  const el = track.value
-  if (!el) return
+  sliderTween?.kill()
+  sliderTween = null
 
-  // Duplicate panels already in template (allPanels)
-  const panelEls = el.querySelectorAll('.services-rail__panel')
-  let totalWidth = 0
-  panelEls.forEach(panel => {
-    totalWidth += panel.offsetWidth + parseFloat(getComputedStyle(panel).marginRight || 0)
+  if (track.value) {
+    gsap.killTweensOf(track.value)
+    gsap.set(track.value, { clearProps: 'transform,willChange' })
+  }
+
+  removeLoopClones()
+}
+
+function syncLoopPanels() {
+  const el = track.value
+  if (!el) return []
+
+  removeLoopClones()
+
+  const originals = Array.from(el.querySelectorAll('.services-rail__panel'))
+    .filter((panel) => panel.dataset.loopClone !== 'true')
+
+  originals.slice().reverse().forEach((panel) => {
+    const clone = panel.cloneNode(true)
+    clone.dataset.loopClone = 'true'
+    clone.setAttribute('aria-hidden', 'true')
+    el.insertBefore(clone, el.firstChild)
+    loopClones.unshift(clone)
   })
 
-  // Animation
-  gsap.set(el, { x: 0, willChange: 'transform' })
-  gsap.to(el, {
-    x: totalWidth / 2,
-    duration: 20,
+  return originals
+}
+
+function buildSlider() {
+  const el = track.value
+  const frame = pin.value
+  if (!el || !frame) return
+
+  const originals = syncLoopPanels()
+  const firstOriginal = originals[0]
+  const firstClone = loopClones[0]
+  if (!firstOriginal || !firstClone) return
+
+  const compactViewport = window.matchMedia('(max-width: 820px)').matches
+
+  const loopDistance = Math.abs(firstOriginal.offsetLeft - firstClone.offsetLeft)
+  if (!loopDistance) return
+
+  const pixelsPerSecond = compactViewport ? 24 : 30
+  const duration = Math.max(loopDistance / pixelsPerSecond, compactViewport ? 18 : 24)
+
+  gsap.set(el, { x: -loopDistance, willChange: 'transform' })
+
+  sliderTween = gsap.to(el, {
+    x: 0,
+    duration,
     ease: 'none',
     repeat: -1,
-    onRepeat: () => {
-      gsap.set(el, { x: 0 })
-    },
   })
+}
+
+function rebuildSlider() {
+  destroySlider()
+
+  buildSlider()
+}
+
+function scheduleRebuild() {
+  if (resizeFrame) {
+    cancelAnimationFrame(resizeFrame)
+  }
+
+  resizeFrame = requestAnimationFrame(() => {
+    resizeFrame = 0
+    rebuildSlider()
+  })
+}
+
+onMounted(async () => {
+  await nextTick()
+  rebuildSlider()
+
+  if (typeof window !== 'undefined') {
+    resizeHandler = () => scheduleRebuild()
+    window.addEventListener('resize', resizeHandler, { passive: true })
+  }
+
+  if (typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(() => scheduleRebuild())
+    if (root.value) {
+      resizeObserver.observe(root.value)
+    }
+    if (pin.value) {
+      resizeObserver.observe(pin.value)
+    }
+    if (track.value) {
+      resizeObserver.observe(track.value)
+    }
+  }
+})
+
+onBeforeUnmount(() => {
+  if (typeof window !== 'undefined' && resizeHandler) {
+    window.removeEventListener('resize', resizeHandler)
+  }
+
+  resizeObserver?.disconnect()
+  resizeObserver = null
+  resizeHandler = null
+
+  destroySlider()
 })
 </script>
 
@@ -80,9 +168,9 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div class="services-rail__pin">
+    <div ref="pin" class="services-rail__pin">
       <div ref="track" class="services-rail__track">
-        <article v-for="(panel, i) in allPanels" :key="panel.index + '-' + i" class="services-rail__panel">
+        <article v-for="panel in panels" :key="panel.index" class="services-rail__panel">
           <span class="services-rail__index">{{ panel.index }}</span>
           <div class="services-rail__content">
             <h3>{{ panel.title }}</h3>

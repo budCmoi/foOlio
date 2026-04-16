@@ -14,7 +14,7 @@ import { useUiState } from '@/composables/useUiState'
 
 const route = useRoute()
 const ui = useUiState()
-const { startLenis, stopLenis } = useLenis({ duration: 4, wheelMultiplier: 0.1 })
+const { startLenis, stopLenis } = useLenis()
 const transitionVeil = ref(null)
 const viewKey = computed(() => route.path)
 const loaderVisible = ui.loaderVisible

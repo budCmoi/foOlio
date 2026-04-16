@@ -34,7 +34,10 @@ onBeforeUnmount(() => {
 <template>
   <section id="contact" ref="root" class="contact-panel page-block" data-page-intro>
     <div class="contact-panel__surface">
-      <p class="section-tag" data-contact-item>Ouvert aux missions</p>
+      <p class="section-tag contact-panel__status" data-contact-item>
+        <span class="contact-panel__status-dot" aria-hidden="true"></span>
+        Ouvert aux missions
+      </p>
       <h2 ref="title" class="contact-panel__title">Construisons une présence numérique impossible à ignorer.</h2>
       <p class="contact-panel__copy" data-contact-item>
         Du portfolio signature au microsite pensé pour un lancement, je conçois et livre des interfaces tactiles avec du mouvement, de la clarté et une vraie discipline de production.

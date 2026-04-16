@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import ContactPanel from '@/components/ContactPanel.vue'
 import HeroSection from '@/components/HeroSection.vue'
 import HorizontalShowcase from '@/components/HorizontalShowcase.vue'
@@ -12,6 +12,7 @@ const manifestTitle = ref(null)
 const { add } = useGSAPContext(root)
 const cleanups = []
 const { projects } = useProjects()
+const featuredProject = computed(() => projects.value[0] ?? null)
 
 const manifestCards = [
   {
@@ -97,13 +98,40 @@ onBeforeUnmount(() => {
     <HorizontalShowcase />
 
     <section id="projects" class="projects-section page-block" data-page-intro>
-      <div class="section-heading">
-        <div>
+      <div class="section-heading projects-section__heading">
+        <div class="projects-section__intro">
+          <p class="section-tag">Sélection</p>
           <h2>Des projets alimentés par un système de données évolutif.</h2>
           <p>
             Chaque carte est générée depuis une source commune, routée dynamiquement et prête à s'étendre sans toucher à la structure de la page.
           </p>
         </div>
+
+        <article
+          v-if="featuredProject"
+          class="projects-section__spotlight"
+          :style="{ '--spotlight-accent': featuredProject.accent }"
+        >
+          <div class="projects-section__spotlight-frame">
+            <img
+              :src="featuredProject.images[0]"
+              :alt="featuredProject.title"
+              loading="lazy"
+              decoding="async"
+            />
+            <span class="projects-section__spotlight-year">{{ featuredProject.year }}</span>
+          </div>
+
+          <div class="projects-section__spotlight-copy">
+            <span class="projects-section__spotlight-label">Cas en lumière</span>
+            <strong>{{ featuredProject.title }}</strong>
+            <p>{{ featuredProject.statement }}</p>
+
+            <ul class="projects-section__spotlight-tags">
+              <li v-for="item in featuredProject.tech.slice(0, 3)" :key="item">{{ item }}</li>
+            </ul>
+          </div>
+        </article>
       </div>
 
       <div class="projects-grid">
