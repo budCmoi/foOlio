@@ -774,16 +774,17 @@ figure {
   display: grid;
   gap: 1.4rem;
   max-width: 46rem;
+  height: 80vh;
 }
 
 .hero__title {
-  font-size: clamp(2.2rem, 5vw, 4.2rem);
+  font-size: 2.2rem !important;
 }
 
 .hero__lead {
   max-width: 38rem;
   color: var(--text-soft);
-  font-size: clamp(1rem, 1.4vw, 1.18rem);
+  font-size: 2.2rem;
   line-height: 1.75;
 }
 
@@ -933,21 +934,27 @@ figure {
   line-height: 1.7;
 }
 
+
 .services-rail {
-  overflow: clip;
+  overflow: hidden;
+  width: 100%;
+  position: relative;
 }
 
 .services-rail__pin {
   position: relative;
+  width: 100%;
 }
 
 .services-rail__track {
   display: flex;
-  gap: 1rem;
+  flex-wrap: nowrap;
+  gap: 1.2rem;
   width: max-content;
 }
 
 .services-rail__panel {
+  min-width: min(72vw, 31rem);
   width: min(72vw, 31rem);
   min-height: 32rem;
   display: grid;
@@ -958,6 +965,8 @@ figure {
   border-radius: 1.8rem;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(249, 240, 228, 0.44));
   box-shadow: var(--shadow);
+  flex-shrink: 0;
+  /* outline retiré */
 }
 
 .services-rail__content {
@@ -1577,8 +1586,21 @@ figure {
   }
 
   .services-rail__panel {
-    width: min(82vw, 28rem);
+    min-width: min(92vw, 28rem);
+    width: min(92vw, 28rem);
   }
+@media (max-width: 820px) {
+  .services-rail__track {
+    flex-direction: column;
+    width: 100%;
+    gap: 1.2rem;
+  }
+  .services-rail__panel {
+    min-width: 100%;
+    width: 100%;
+    /* outline retiré */
+  }
+}
 
   .studio-panel--sidebar {
     position: static;
@@ -1846,7 +1868,7 @@ figure {
       width: 100%;
       min-width: 0;
       max-width: 100%;
-      font-size: 1rem;
+      font-size: 0.92rem;
     }
 
     /* MANIFEST */
@@ -2050,6 +2072,7 @@ figure {
     min-width: 0;
     flex: 1 1 0;
     max-width: 100%;
+    font-size: 0.92rem;
   }
 
   .hero__copy {

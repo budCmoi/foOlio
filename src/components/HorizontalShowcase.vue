@@ -1,11 +1,13 @@
 <script setup>
-import { onMounted, ref } from 'vue'
-import { createRevealTrigger, gsap, isMobileViewport, isReducedMotion, useGSAPContext } from '@/composables/useGSAP'
+import { onMounted, ref, computed, nextTick } from 'vue'
+import { gsap, isMobileViewport, isReducedMotion, useGSAPContext } from '@/composables/useGSAP'
+
 
 const root = ref(null)
 const track = ref(null)
 const { add } = useGSAPContext(root)
 
+// Duplicate panels for infinite loop
 const panels = [
   {
     index: '01',
@@ -27,41 +29,41 @@ const panels = [
   },
 ]
 
-onMounted(() => {
-  add(() => {
-    if (isMobileViewport() || isReducedMotion()) {
-      gsap.from('.services-rail__panel', {
-        y: 40,
-        autoAlpha: 0,
-        stagger: 0.1,
-        duration: 0.7,
-        scrollTrigger: createRevealTrigger(root.value),
-      })
-      return
-    }
+const allPanels = computed(() => [...panels, ...panels])
 
-    const getDistance = () => Math.max(track.value.scrollWidth - root.value.offsetWidth, 0)
-
-    gsap.to(track.value, {
-      x: () => -getDistance(),
-      ease: 'none',
-      scrollTrigger: {
-        trigger: root.value,
-        start: 'top top',
-        end: () => `+=${getDistance() + window.innerHeight * 0.7}`,
-        pin: true,
-        scrub: 1,
-        invalidateOnRefresh: true,
-      },
-    })
-
+onMounted(async () => {
+  // Mobile/reduced motion: fade-in only
+  if (isMobileViewport() || isReducedMotion()) {
     gsap.from('.services-rail__panel', {
+      y: 40,
       autoAlpha: 0,
-      y: 36,
-      stagger: 0.08,
-      duration: 0.72,
-      scrollTrigger: createRevealTrigger(root.value),
+      stagger: 0.1,
+      duration: 0.7,
     })
+    return
+  }
+
+  await nextTick()
+  const el = track.value
+  if (!el) return
+
+  // Duplicate panels already in template (allPanels)
+  const panelEls = el.querySelectorAll('.services-rail__panel')
+  let totalWidth = 0
+  panelEls.forEach(panel => {
+    totalWidth += panel.offsetWidth + parseFloat(getComputedStyle(panel).marginRight || 0)
+  })
+
+  // Animation
+  gsap.set(el, { x: 0, willChange: 'transform' })
+  gsap.to(el, {
+    x: totalWidth / 2,
+    duration: 20,
+    ease: 'none',
+    repeat: -1,
+    onRepeat: () => {
+      gsap.set(el, { x: 0 })
+    },
   })
 })
 </script>
@@ -80,7 +82,7 @@ onMounted(() => {
 
     <div class="services-rail__pin">
       <div ref="track" class="services-rail__track">
-        <article v-for="panel in panels" :key="panel.index" class="services-rail__panel">
+        <article v-for="(panel, i) in allPanels" :key="panel.index + '-' + i" class="services-rail__panel">
           <span class="services-rail__index">{{ panel.index }}</span>
           <div class="services-rail__content">
             <h3>{{ panel.title }}</h3>
