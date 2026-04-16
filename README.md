@@ -47,6 +47,16 @@ Le projet est prêt pour un déploiement Render en site statique via le fichier 
 
 Si le service Render existe déjà, il doit être resynchronisé avec le dépôt ou relancé depuis le dashboard Render pour prendre en compte cette configuration.
 
+Pour recréer le static site après suppression, un script d'automatisation est aussi disponible dans scripts/create-render-site.mjs.
+
+Exemple d'usage :
+
+1. créer une clé API Render
+2. définir RENDER_API_KEY dans l'environnement
+3. lancer node scripts/create-render-site.mjs
+
+Le script tente de retrouver le workspace, crée le static site GitHub sur la branche main, injecte NODE_VERSION et SKIP_INSTALL_DEPS, puis ajoute la réécriture SPA vers /index.html.
+
 ## Auteur
 [budCmoi](https://github.com/budCmoi)
 
