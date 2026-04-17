@@ -1,5 +1,5 @@
 <script setup>
-import { nextTick, onMounted, ref, watch } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import MagneticLink from '@/components/MagneticLink.vue'
 import { gsap } from '@/composables/useGSAP'
 import { useUiState } from '@/composables/useUiState'
@@ -44,6 +44,11 @@ onMounted(() => {
   })
 })
 
+onBeforeUnmount(() => {
+  activeTimeline?.kill()
+  activeTimeline = null
+})
+
 watch(ui.menuOpen, async (isOpen) => {
   await nextTick()
 
@@ -51,75 +56,101 @@ watch(ui.menuOpen, async (isOpen) => {
     return
   }
 
-  const items = panel.value.querySelectorAll('[data-menu-item]')
-  const meta = panel.value.querySelectorAll('[data-menu-meta]')
+  const items = Array.from(panel.value.querySelectorAll('[data-menu-item]'))
+  const meta = Array.from(panel.value.querySelectorAll('[data-menu-meta]'))
+  const tweenTargets = [panel.value, ...items, ...meta]
 
   activeTimeline?.kill()
-  gsap.killTweensOf([panel.value, items, meta])
+  gsap.killTweensOf(tweenTargets)
 
   if (isOpen) {
-    activeTimeline = gsap.timeline({ defaults: { ease: 'power4.out' } })
+    const timeline = gsap.timeline({ defaults: { ease: 'power4.out' } })
       .set(panel.value, { pointerEvents: 'auto' })
-      .set(items, {
-        autoAlpha: 0,
-        x: 18,
-        y: 12,
-      })
-      .set(meta, {
-        autoAlpha: 0,
-        y: 10,
-      })
       .to(panel.value, {
         autoAlpha: 1,
         xPercent: 0,
         duration: 0.36,
         ease: 'power3.out',
       })
-      .to(items, {
-        x: 0,
-        y: 0,
-        autoAlpha: 1,
-        stagger: 0.08,
-        duration: 0.4,
-      }, '-=0.1')
-      .to(meta, {
-        y: 0,
-        autoAlpha: 1,
-        stagger: 0.06,
-        duration: 0.28,
-      }, '-=0.24')
+
+    if (items.length) {
+      timeline
+        .set(items, {
+          autoAlpha: 0,
+          x: 18,
+          y: 12,
+        })
+        .to(items, {
+          x: 0,
+          y: 0,
+          autoAlpha: 1,
+          stagger: 0.08,
+          duration: 0.4,
+        }, '-=0.1')
+    }
+
+    if (meta.length) {
+      timeline
+        .set(meta, {
+          autoAlpha: 0,
+          y: 10,
+        })
+        .to(meta, {
+          y: 0,
+          autoAlpha: 1,
+          stagger: 0.06,
+          duration: 0.28,
+        }, '-=0.24')
+    }
+
+    activeTimeline = timeline
 
     return
   }
 
-  activeTimeline = gsap.timeline({ defaults: { ease: 'power3.inOut' } })
-    .to(items, {
+  const timeline = gsap.timeline({ defaults: { ease: 'power3.inOut' } })
+
+  if (items.length) {
+    timeline.to(items, {
       x: 22,
       autoAlpha: 0,
       stagger: -0.05,
       duration: 0.22,
     })
-    .to(meta, {
+  }
+
+  if (meta.length) {
+    timeline.to(meta, {
       autoAlpha: 0,
       y: 10,
       duration: 0.18,
-    }, '<')
-    .to(panel.value, {
-      autoAlpha: 0,
-      xPercent: 2,
-      duration: 0.24,
-      ease: 'power2.inOut',
-      onComplete: () => {
-        gsap.set(panel.value, { pointerEvents: 'none' })
+    }, items.length ? '<' : undefined)
+  }
+
+  timeline.to(panel.value, {
+    autoAlpha: 0,
+    xPercent: 2,
+    duration: 0.24,
+    ease: 'power2.inOut',
+    onComplete: () => {
+      gsap.set(panel.value, { pointerEvents: 'none' })
+
+      if (items.length) {
         gsap.set(items, { clearProps: 'all' })
+      }
+
+      if (meta.length) {
         gsap.set(meta, { clearProps: 'all' })
-      },
-    }, '-=0.04')
+      }
+    },
+  }, '-=0.04')
+
+  activeTimeline = timeline
 }, { flush: 'post' })
 </script>
 
 <template>
-  <aside id="fullscreen-menu" ref="panel" class="fullscreen-menu" :aria-hidden="!menuOpen">
+  <aside id="fullscreen-menu" ref="panel" class="fullscreen-menu" :aria-hidden="!menuOpen" :inert="menuOpen ? null : ''">
     <div class="fullscreen-menu__inner">
       <nav class="fullscreen-menu__nav" aria-label="Navigation du site">
         <div v-for="item in navigation" :key="item.label" class="fullscreen-menu__link" data-menu-item>

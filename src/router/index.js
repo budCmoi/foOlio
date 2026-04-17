@@ -2,6 +2,13 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { findProjectById, privateStudioPath } from '@/composables/useProjects'
 
 const homeTitle = 'Mohamed Ali | Portfolio frontend créatif'
+let pendingScrollInstruction = null
+
+export function consumePendingScrollInstruction() {
+  const instruction = pendingScrollInstruction
+  pendingScrollInstruction = null
+  return instruction
+}
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,19 +52,27 @@ const router = createRouter({
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
-      return savedPosition
+      pendingScrollInstruction = {
+        top: savedPosition.top ?? 0,
+        left: savedPosition.left ?? 0,
+      }
+
+      return false
     }
 
     if (to.hash) {
-      return {
-        el: to.hash,
-        top: 96,
+      pendingScrollInstruction = {
+        hash: to.hash,
       }
+
+      return false
     }
 
-    return {
+    pendingScrollInstruction = {
       top: 0,
     }
+
+    return false
   },
 })
 

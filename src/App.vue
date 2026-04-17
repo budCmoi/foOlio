@@ -11,6 +11,7 @@ import { gsap, ScrollTrigger } from '@/composables/useGSAP'
 import { scrollToTarget, useLenis } from '@/composables/useLenis'
 import { findProjectById } from '@/composables/useProjects'
 import { useUiState } from '@/composables/useUiState'
+import { consumePendingScrollInstruction } from '@/router'
 
 const route = useRoute()
 const ui = useUiState()
@@ -57,24 +58,37 @@ watch(() => route.fullPath, async () => {
   ui.closeMenu()
   ui.clearCursor()
 
+  await applyRouteScroll()
+})
+
+onMounted(() => {
+  document.documentElement.classList.remove('is-locked')
+  setTransitionVeilState()
+  void applyRouteScroll()
+})
+
+async function applyRouteScroll() {
   await nextTick()
 
   requestAnimationFrame(() => {
     ScrollTrigger.refresh()
   })
 
-  if (route.hash) {
-    scrollToTarget(route.hash, { offset: -96, force: true })
+  const pendingScroll = consumePendingScrollInstruction()
+  const hashTarget = pendingScroll?.hash ?? route.hash
+
+  if (hashTarget) {
+    scrollToTarget(hashTarget, { offset: -96, force: true })
+    return
+  }
+
+  if (typeof pendingScroll?.top === 'number') {
+    scrollToTarget(pendingScroll.top, { immediate: true, force: true })
     return
   }
 
   scrollToTarget(0, { immediate: true, force: true })
-})
-
-onMounted(() => {
-  document.documentElement.classList.remove('is-locked')
-  setTransitionVeilState()
-})
+}
 
 function getTransitionNodes() {
   const panels = transitionVeil.value?.querySelectorAll('.route-transition__panel') || []

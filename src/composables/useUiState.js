@@ -6,6 +6,29 @@ const cursorText = ref('')
 const cursorTheme = ref('default')
 const transitioning = ref(false)
 
+function moveFocusOutsideMenu() {
+  if (typeof document === 'undefined') {
+    return
+  }
+
+  const activeElement = document.activeElement
+  if (!(activeElement instanceof HTMLElement)) {
+    return
+  }
+
+  if (!activeElement.closest('#fullscreen-menu')) {
+    return
+  }
+
+  const trigger = document.querySelector('[aria-controls="fullscreen-menu"]')
+  if (trigger instanceof HTMLElement) {
+    trigger.focus({ preventScroll: true })
+    return
+  }
+
+  activeElement.blur()
+}
+
 export function useUiState() {
   const isOverlayActive = computed(() => menuOpen.value || loaderVisible.value || transitioning.value)
 
@@ -14,10 +37,15 @@ export function useUiState() {
   }
 
   function closeMenu() {
+    moveFocusOutsideMenu()
     menuOpen.value = false
   }
 
   function toggleMenu() {
+    if (menuOpen.value) {
+      moveFocusOutsideMenu()
+    }
+
     menuOpen.value = !menuOpen.value
   }
 
