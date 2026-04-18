@@ -2,7 +2,7 @@ import { computed, unref } from 'vue'
 import { findProjectById, useProjects } from '@/composables/useProjects'
 
 export function useProjectLookup(projectId) {
-  const { projects } = useProjects()
+  const { projects, projectsHydrated } = useProjects()
 
   const project = computed(() => findProjectById(unref(projectId)))
   const relatedProjects = computed(() => projects.value
@@ -11,6 +11,7 @@ export function useProjectLookup(projectId) {
 
   return {
     project,
+    projectsHydrated,
     relatedProjects,
   }
 }

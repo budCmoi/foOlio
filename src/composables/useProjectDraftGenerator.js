@@ -20,7 +20,7 @@ const techPriority = [
   'Tailwind CSS',
   'Pinia',
   'Supabase',
-  'Firebase',
+  'Prisma',
 ]
 
 const dependencyTechMap = {
@@ -39,7 +39,8 @@ const dependencyTechMap = {
   tailwindcss: 'Tailwind CSS',
   pinia: 'Pinia',
   express: 'Express',
-  firebase: 'Firebase',
+  prisma: 'Prisma',
+  '@prisma/client': 'Prisma',
   '@supabase/supabase-js': 'Supabase',
 }
 
@@ -66,6 +67,7 @@ const topicTechMap = {
   react: 'React',
   nextjs: 'Next.js',
   nuxt: 'Nuxt',
+  prisma: 'Prisma',
 }
 
 const textSniffMap = [
@@ -84,6 +86,7 @@ const textSniffMap = [
   ['tailwind', 'Tailwind CSS'],
   ['react', 'React'],
   ['next.js', 'Next.js'],
+  ['prisma', 'Prisma'],
 ]
 
 function cleanText(value = '') {

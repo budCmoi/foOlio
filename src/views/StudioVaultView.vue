@@ -106,18 +106,18 @@ const projectSearchSummary = computed(() => {
 const storageStatusTone = computed(() => (projectStorageError.value ? 'is-error' : 'is-success'))
 const storageStatusMessage = computed(() => {
   if (projectStorageError.value) {
-    return `${projectStorageError.value} Les changements restent sauvegardés localement dans ce navigateur.`
+    return `${projectStorageError.value} La synchronisation Prisma n a pas pu aboutir.`
   }
 
   if (projectStoragePending.value) {
-    return 'Synchronisation Firebase en cours. Les images utilisent le premier backend disponible entre Realtime Database, Storage et Firestore.'
+    return 'Synchronisation Prisma en cours. Les projets et leurs images sont envoyés vers l API avant d etre stockés en base.'
   }
 
-  if (projectStorageMode.value === 'firebase') {
-    return 'Synchronisation Firebase active. Les images utilisent le premier backend disponible entre Realtime Database, Storage et Firestore.'
+  if (projectStorageMode.value === 'prisma') {
+    return 'Synchronisation Prisma active. Les projets et leurs images sont stockés en base via l API Express.'
   }
 
-  return 'Mode local actif. Les projets restent sauvegardés dans ce navigateur.'
+  return 'Prisma est configuré mais la connexion à l API n est pas encore prête.'
 })
 
 function showFeedback(type, text) {
@@ -355,10 +355,10 @@ async function handleImport(event) {
       <div class="section-heading">
         <p class="section-tag">Acces prive</p>
         <div>
-          <h1>Ajouter un projet depuis un studio prive, synchronise avec Firebase.</h1>
+          <h1>Ajouter un projet depuis un studio prive, synchronise avec Prisma.</h1>
           <p>
             Cette page n'apparait nulle part dans la navigation publique. Chaque projet ajoute ici s'affiche ensuite sur l'accueil,
-            possede sa propre page detail et reste synchronise via Firestore pour eviter de dependre uniquement du localStorage.
+            possede sa propre page detail et reste synchronise en base via Prisma, sans dependre d un service externe additionnel.
           </p>
         </div>
       </div>
@@ -389,7 +389,7 @@ async function handleImport(event) {
             <h2>{{ isEditing ? 'Modifier un projet personnalise' : 'Ajouter un nouveau projet' }}</h2>
             <p>
               Renseigne tout ce que le visiteur voit deja sur une page projet : titre, description, phrase d'accroche,
-              technologies, resultats, images et lien live. Le contenu est ensuite synchronise dans Firebase.
+              technologies, resultats, images et lien live. Le contenu est ensuite synchronise dans la base Prisma.
             </p>
           </div>
         </div>
@@ -482,7 +482,7 @@ async function handleImport(event) {
           <div class="studio-panel__heading studio-panel__heading--nested">
             <div>
               <h3>Images du projet</h3>
-              <p>Ajoute autant d'images que tu veux. Quand Firebase est actif, chaque image utilise automatiquement le premier backend disponible entre Realtime Database, Storage et Firestore.</p>
+              <p>Ajoute autant d'images que tu veux. Elles sont envoyees telles quelles a l API Prisma puis enregistrees avec le projet dans la base.</p>
             </div>
           </div>
 

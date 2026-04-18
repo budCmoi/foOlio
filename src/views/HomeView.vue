@@ -12,16 +12,35 @@ const root = ref(null)
 const manifestTitle = ref(null)
 const { add } = useGSAPContext(root)
 const cleanups = []
-const { projects } = useProjects()
+const { projects, projectsHydrated } = useProjects()
 const hasProjects = computed(() => projects.value.length > 0)
+const isLoadingProjects = computed(() => !projectsHydrated.value)
 const featuredProject = computed(() => projects.value[0] ?? null)
-const projectsSectionTag = computed(() => (hasProjects.value ? 'Cas réels' : 'Sélection confidentielle'))
-const projectsSectionTitle = computed(() => (hasProjects.value
-  ? 'Des solutions pilotées par la donnée, pensées pour évoluer sans friction.'
-  : 'Une sélection réelle, publiée seulement quand elle mérite de l’être.'))
-const projectsSectionLead = computed(() => (hasProjects.value
-  ? 'J\'aime les bases où contenu, studio interne, automatisation et IA sont prévus dès le départ, pas greffés plus tard à la va-vite.'
-  : 'Le site est prêt à publier chaque mission depuis le studio privé. En attendant, les références et démonstrations se partagent au bon moment, selon le contexte.'))
+const projectsSectionTag = computed(() => {
+  if (isLoadingProjects.value) {
+    return 'Chargement'
+  }
+
+  return hasProjects.value ? 'Cas réels' : 'Sélection confidentielle'
+})
+const projectsSectionTitle = computed(() => {
+  if (isLoadingProjects.value) {
+    return 'Les projets Prisma arrivent depuis l API avant d entrer dans la page.'
+  }
+
+  return hasProjects.value
+    ? 'Des solutions pilotées par la donnée, pensées pour évoluer sans friction.'
+    : 'Une sélection réelle, publiée seulement quand elle mérite de l’être.'
+})
+const projectsSectionLead = computed(() => {
+  if (isLoadingProjects.value) {
+    return 'Le portfolio attend la reponse de la base Prisma avant d afficher les cas publies.'
+  }
+
+  return hasProjects.value
+    ? 'J\'aime les bases où contenu, studio interne, automatisation et IA sont prévus dès le départ, pas greffés plus tard à la va-vite.'
+    : 'Le site est prêt à publier chaque mission depuis le studio privé. En attendant, les références et démonstrations se partagent au bon moment, selon le contexte.'
+})
 
 const manifestCards = [
   {
@@ -150,7 +169,7 @@ onBeforeUnmount(() => {
         />
       </div>
 
-      <article v-else class="projects-section__empty">
+      <article v-else-if="!isLoadingProjects" class="projects-section__empty">
         <span class="projects-section__empty-label">Publication en cours</span>
         <h3>La prochaine publication sera un cas réel.</h3>
         <p>
@@ -164,6 +183,14 @@ onBeforeUnmount(() => {
             Voir l'approche
           </MagneticLink>
         </div>
+      </article>
+
+      <article v-else class="projects-section__empty">
+        <span class="projects-section__empty-label">Base Prisma</span>
+        <h3>Chargement des projets en cours.</h3>
+        <p>
+          Le portfolio attend la réponse de l’API Prisma avant d’afficher les cas publiés.
+        </p>
       </article>
     </section>
 

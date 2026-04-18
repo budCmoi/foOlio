@@ -1,16 +1,15 @@
 services:
   - type: web
     name: foolio
-    runtime: static
+    runtime: node
     buildCommand: npm ci --include=dev && npm run build
-    staticPublishPath: ./dist
+    startCommand: npm run start
     autoDeployTrigger: commit
     envVars:
       - key: NODE_VERSION
         value: 22.22.0
-      - key: SKIP_INSTALL_DEPS
-        value: true
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+      - key: DATABASE_URL
+        value: file:/var/data/foolio.db
+    disks:
+      - name: foolio-data
+        mountPath: /var/data

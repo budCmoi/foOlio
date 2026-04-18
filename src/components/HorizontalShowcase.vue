@@ -17,7 +17,7 @@ const panels = [
     index: '02',
     title: 'Relier interface, logique et système',
     description: 'Je préfère une solution où le studio, la donnée, les routes, l\'admin et la synchro avancent ensemble plutôt qu\'un assemblage fragile.',
-    tags: ['Stack complète', 'Firebase', 'Architecture évolutive'],
+    tags: ['Stack complète', 'Prisma', 'Architecture évolutive'],
   },
   {
     index: '03',

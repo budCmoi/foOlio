@@ -1625,17 +1625,54 @@ figure {
 }
 
 .project-gallery__frame {
+  position: relative;
+  display: grid;
+  place-items: center;
   overflow: hidden;
+  isolation: isolate;
+  height: clamp(18rem, 46vw, 30rem);
+  padding: clamp(0.8rem, 1.4vw, 1.15rem);
   border-radius: calc(var(--radius-lg) + 0.3rem);
-  background: rgba(247, 242, 233, 0.05);
+  background:
+    radial-gradient(circle at 20% 18%, rgba(247, 242, 233, 0.16), transparent 34%),
+    linear-gradient(135deg, rgba(247, 242, 233, 0.08), rgba(11, 13, 20, 0.92));
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
 }
 
-.project-gallery__frame img {
+.project-gallery__frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--project-gallery-image);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: blur(42px) saturate(1.18);
+  transform: scale(1.12);
+  opacity: 0.78;
+}
+
+.project-gallery__frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(180deg, rgba(7, 9, 14, 0.08), rgba(7, 9, 14, 0.34)),
+    radial-gradient(circle at center, rgba(7, 9, 14, 0), rgba(7, 9, 14, 0.24));
+}
+
+.project-gallery__image {
+  position: relative;
+  z-index: 2;
   width: 100%;
-  min-height: 30rem;
-  object-fit: cover;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  border-radius: calc(var(--radius-lg) - 0.28rem);
+  will-change: transform;
 }
 
 .related-projects {
@@ -2371,8 +2408,9 @@ figure {
     grid-template-columns: 1fr;
   }
 
-  .project-gallery__frame img {
-    min-height: 18rem;
+  .project-gallery__frame {
+    height: 18rem;
+    padding: 0.75rem;
   }
 
   .custom-cursor {

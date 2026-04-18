@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import MagneticLink from '@/components/MagneticLink.vue'
 import ProjectCard from '@/components/ProjectCard.vue'
@@ -12,23 +12,25 @@ const route = useRoute()
 const root = ref(null)
 const title = ref(null)
 const { add } = useGSAPContext(root)
-const cleanups = []
 
 const projectId = computed(() => route.params.id)
-const { project, relatedProjects } = useProjectLookup(projectId)
+const { project, projectsHydrated, relatedProjects } = useProjectLookup(projectId)
 
 watch(projectId, () => {
   scrollToTarget(0, { immediate: true, force: true })
 }, { immediate: true })
 
-onMounted(() => {
-  add(() => {
-    if (!project.value) {
-      return
-    }
+watch(project, async (nextProject, _previousProject, onCleanup) => {
+  if (!nextProject) {
+    return
+  }
 
+  await nextTick()
+
+  const animationCleanups = []
+  const context = add(() => {
     const intro = gsap.timeline({ defaults: { ease: 'power3.out' } })
-    cleanups.push(splitReveal(title.value, intro, { position: 0 }))
+    animationCleanups.push(splitReveal(title.value, intro, { position: 0 }))
 
     intro.from('[data-project-intro]', {
       y: 24,
@@ -61,11 +63,12 @@ onMounted(() => {
       })
     }
   })
-})
 
-onBeforeUnmount(() => {
-  cleanups.splice(0).forEach((cleanup) => cleanup?.())
-})
+  onCleanup(() => {
+    animationCleanups.splice(0).forEach((cleanup) => cleanup?.())
+    context.revert()
+  })
+}, { immediate: true })
 </script>
 
 <template>
@@ -134,6 +137,16 @@ onBeforeUnmount(() => {
           :index="index"
         />
       </div>
+    </section>
+  </main>
+
+  <main v-else-if="!projectsHydrated" class="page page--not-found">
+    <section class="not-found page-block" data-page-intro>
+      <p class="section-tag">Chargement</p>
+      <h1>Le projet arrive depuis la base Prisma.</h1>
+      <p>
+        La page détail attend encore la réponse de l’API avant d’afficher le contenu complet.
+      </p>
     </section>
   </main>
 
