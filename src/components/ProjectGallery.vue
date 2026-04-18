@@ -18,18 +18,6 @@ const cards = ref([])
 const imageNodes = ref([])
 const { add } = useGSAPContext(root)
 
-function buildFrameStyle(image) {
-  const normalizedImage = String(image ?? '').trim()
-
-  if (!normalizedImage) {
-    return {}
-  }
-
-  return {
-    '--project-gallery-image': `url(${JSON.stringify(normalizedImage)})`,
-  }
-}
-
 function setCardRef(element) {
   if (element) {
     cards.value.push(element)
@@ -81,10 +69,8 @@ onMounted(() => {
   <section ref="root" class="project-gallery page-block">
     <figure v-for="(image, index) in props.images" :key="`${image}-${index}`" :ref="setCardRef" class="project-gallery__item">
       <div class="project-gallery__frame">
-        <div class="project-gallery__surface" :style="buildFrameStyle(image)"></div>
         <img
           :ref="setImageRef"
-          class="project-gallery__image"
           :src="image"
           :alt="`${props.title} visuel ${index + 1}`"
           loading="lazy"

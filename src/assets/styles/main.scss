@@ -1625,64 +1625,17 @@ figure {
 }
 
 .project-gallery__frame {
-  position: relative;
-  overflow: visible;
-  box-sizing: border-box;
-  --project-gallery-overhang: 10px;
-  --project-gallery-inset: clamp(0.8rem, 1.4vw, 1.15rem);
-  height: clamp(18rem, 46vw, 30rem);
-  padding: 0 var(--project-gallery-overhang) var(--project-gallery-overhang) 0;
-}
-
-.project-gallery__surface {
-  position: absolute;
-  inset: 0 var(--project-gallery-overhang) var(--project-gallery-overhang) 0;
   overflow: hidden;
-  isolation: isolate;
   border-radius: calc(var(--radius-lg) + 0.3rem);
-  background:
-    radial-gradient(circle at 20% 18%, rgba(247, 242, 233, 0.16), transparent 34%),
-    linear-gradient(135deg, rgba(247, 242, 233, 0.08), rgba(11, 13, 20, 0.92));
+  background: rgba(247, 242, 233, 0.05);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
 }
 
-.project-gallery__surface::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background-image: var(--project-gallery-image);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  filter: blur(42px) saturate(1.18);
-  transform: scale(1.12);
-  opacity: 0.78;
-}
-
-.project-gallery__surface::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background:
-    linear-gradient(180deg, rgba(7, 9, 14, 0.08), rgba(7, 9, 14, 0.34)),
-    radial-gradient(circle at center, rgba(7, 9, 14, 0), rgba(7, 9, 14, 0.24));
-}
-
-.project-gallery__image {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  z-index: 2;
-  width: calc(100% - var(--project-gallery-inset));
-  height: calc(100% - var(--project-gallery-inset));
-  display: block;
-  object-fit: contain;
-  object-position: right bottom;
-  border-radius: calc(var(--radius-lg) - 0.28rem);
-  will-change: transform;
+.project-gallery__frame img {
+  width: 100%;
+  min-height: 30rem;
+  object-fit: cover;
 }
 
 .related-projects {
@@ -2418,9 +2371,8 @@ figure {
     grid-template-columns: 1fr;
   }
 
-  .project-gallery__frame {
-    height: 18rem;
-    padding: 0.75rem;
+  .project-gallery__frame img {
+    min-height: 18rem;
   }
 
   .custom-cursor {

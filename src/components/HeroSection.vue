@@ -231,6 +231,7 @@ onBeforeUnmount(() => {
 
     <div class="hero__grid">
       <div class="hero__copy">
+        <p class="section-tag" data-hero-fade>Architectures / IA-native / Web, mobile, jeux</p>
         <h1 ref="title" class="hero__title">Je conçois des systèmes digitaux ambitieux, du web au jeu vidéo, avec une IA native à chaque couche.</h1>
         <p class="hero__lead" data-hero-fade>
           {{ siteProfile.intro }}
