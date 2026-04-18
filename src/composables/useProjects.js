@@ -10,12 +10,6 @@ import {
   setDoc,
   writeBatch,
 } from 'firebase/firestore'
-import {
-  getDownloadURL,
-  getStorage,
-  ref as storageRef,
-  uploadString,
-} from 'firebase/storage'
 import { baseProjects } from '@/data/projects'
 import {
   getFirebaseProjectStoreConfig,
@@ -26,7 +20,11 @@ import {
 export const privateStudioPath = '/atelier-prive-93f6c1'
 
 const STORAGE_KEY = 'foolio.custom-projects.v1'
-const STORAGE_FOLDER = 'portfolio-projects'
+const FIRESTORE_IMAGE_CHUNKS_SUBCOLLECTION = 'imageChunks'
+const FIRESTORE_IMAGE_REFERENCE_PREFIX = 'firestore-image-ref-'
+const LEGACY_FIRESTORE_IMAGE_REFERENCE_PREFIX = 'firestore-image://'
+const MAX_FIRESTORE_IMAGE_CHUNK_LENGTH = 240000
+const MAX_FIRESTORE_BATCH_OPERATIONS = 450
 const customProjects = ref([])
 const projectStorageMode = ref('local')
 const projectStorageError = ref('')
@@ -39,7 +37,6 @@ let firebaseSeedPromise = null
 let lastFailedFirebaseConfigKey = ''
 
 const firebaseConnections = new Map()
-const firebaseStorageAvailability = new Map()
 const { firebaseProjectStoreConfig } = useFirebaseProjectStoreConfig()
 
 function cleanText(value = '') {
@@ -229,16 +226,12 @@ function buildFirebaseErrorMessage(error) {
   const code = cleanText(error?.code)
   const message = cleanText(error?.message)
 
-  if (code === 'storage/unauthorized') {
-    return 'Firebase Storage refuse l upload des images. Publie des regles Storage qui autorisent le dossier portfolio-projects pour les images du studio.'
-  }
-
-  if (code === 'storage/unknown') {
-    return 'Firebase Storage ne repond pas correctement. Verifie que Storage est bien active dans le projet Firebase et que le bucket existe vraiment.'
+  if (code === 'permission-denied' || message.includes('Missing or insufficient permissions')) {
+    return 'Firestore refuse l ecriture des projets ou des fragments d images. Publie les regles de firestore.rules puis reessaie.'
   }
 
   if (message.includes('The value of property "array" is longer than')) {
-    return 'Le document Firestore etait trop lourd. Les images locales doivent passer par Firebase Storage avant l enregistrement.'
+    return 'Le document Firestore etait trop lourd. Les images doivent etre decoupees dans des documents Firestore separes avant l enregistrement.'
   }
 
   if (message) {
@@ -290,110 +283,167 @@ function getFirebaseConnection(config) {
 
   const db = getFirestore(app)
   const collectionRef = collection(db, config.collectionPath)
-  const storage = getStorage(app)
-  const connection = { db, collectionRef, storage }
+  const connection = { db, collectionRef }
 
   firebaseConnections.set(signature, connection)
 
   return connection
 }
 
-function isDataUrlImage(value = '') {
-  return /^data:image\//i.test(cleanText(value))
+function buildFirestoreImageReference(index) {
+  return `${FIRESTORE_IMAGE_REFERENCE_PREFIX}${String(index).padStart(2, '0')}`
 }
 
-function getImageExtensionFromDataUrl(value = '') {
+function isFirestoreImageReference(value = '') {
   const normalizedValue = cleanText(value)
-  const mimeMatch = normalizedValue.match(/^data:(image\/[a-z0-9.+-]+);base64,/i)
-  const mimeType = mimeMatch?.[1]?.toLowerCase() || ''
 
-  if (mimeType.includes('png')) {
-    return 'png'
-  }
-
-  if (mimeType.includes('webp')) {
-    return 'webp'
-  }
-
-  if (mimeType.includes('gif')) {
-    return 'gif'
-  }
-
-  if (mimeType.includes('svg')) {
-    return 'svg'
-  }
-
-  return 'jpg'
+  return normalizedValue.startsWith(FIRESTORE_IMAGE_REFERENCE_PREFIX)
+    || normalizedValue.startsWith(LEGACY_FIRESTORE_IMAGE_REFERENCE_PREFIX)
 }
 
-async function ensureFirebaseStorageAvailability(config) {
-  const signature = buildFirebaseConfigSignature(config)
+function splitFirestoreImageValue(value = '') {
+  const normalizedValue = cleanText(value)
 
-  if (firebaseStorageAvailability.has(signature)) {
-    return firebaseStorageAvailability.get(signature)
+  if (!normalizedValue) {
+    return []
   }
 
-  const probePromise = fetch(
-    `https://firebasestorage.googleapis.com/v0/b/${encodeURIComponent(config.storageBucket)}/o?maxResults=1`,
-  ).then(async (response) => {
-    if (response.ok) {
-      return true
+  const chunks = []
+
+  for (let index = 0; index < normalizedValue.length; index += MAX_FIRESTORE_IMAGE_CHUNK_LENGTH) {
+    chunks.push(normalizedValue.slice(index, index + MAX_FIRESTORE_IMAGE_CHUNK_LENGTH))
+  }
+
+  return chunks
+}
+
+async function commitFirestoreBatchOperations(db, operations) {
+  if (!operations.length) {
+    return
+  }
+
+  let batch = writeBatch(db)
+  let batchSize = 0
+
+  for (const operation of operations) {
+    if (batchSize >= MAX_FIRESTORE_BATCH_OPERATIONS) {
+      await batch.commit()
+      batch = writeBatch(db)
+      batchSize = 0
     }
 
-    if (response.status === 404) {
-      throw new Error('Firebase Storage est configure dans le code, mais le bucket n existe pas encore. Active Storage dans la console Firebase puis publie les regles storage.rules.')
+    operation(batch)
+    batchSize += 1
+  }
+
+  if (batchSize) {
+    await batch.commit()
+  }
+}
+
+function createFirestoreProjectPayload(project) {
+  return {
+    ...project,
+    images: project.images.map((_, index) => buildFirestoreImageReference(index)),
+  }
+}
+
+async function readProjectImagesFromFirebase(project, config) {
+  const fallbackImages = normalizeImages(project.images).filter((image) => !isFirestoreImageReference(image))
+  const { db } = getFirebaseConnection(config)
+  const imageChunksRef = collection(db, config.collectionPath, project.id, FIRESTORE_IMAGE_CHUNKS_SUBCOLLECTION)
+  const imageChunksSnapshot = await getDocs(imageChunksRef)
+
+  if (imageChunksSnapshot.empty) {
+    return {
+      ...project,
+      images: fallbackImages.length ? fallbackImages : normalizeImages(project.images),
+    }
+  }
+
+  const imageGroups = new Map()
+
+  imageChunksSnapshot.forEach((entry) => {
+    const data = entry.data()
+    const imageId = cleanText(data.imageId)
+    const order = Number.isFinite(data.order) ? data.order : Number.parseInt(data.order, 10) || 0
+    const chunkIndex = Number.isFinite(data.chunkIndex) ? data.chunkIndex : Number.parseInt(data.chunkIndex, 10) || 0
+    const value = cleanText(data.value)
+
+    if (!imageId || !value) {
+      return
     }
 
-    if (response.status === 401 || response.status === 403) {
-      throw new Error('Firebase Storage repond mais refuse l acces au bucket. Verifie les regles Storage et l activation du service.')
+    if (!imageGroups.has(imageId)) {
+      imageGroups.set(imageId, {
+        order,
+        chunks: [],
+      })
     }
 
-    throw new Error(`Firebase Storage repond avec le statut ${response.status}.`)
+    imageGroups.get(imageId).chunks.push({ chunkIndex, value })
   })
 
-  firebaseStorageAvailability.set(signature, probePromise)
-
-  try {
-    return await probePromise
-  }
-  catch (error) {
-    firebaseStorageAvailability.delete(signature)
-    throw error
-  }
-}
-
-async function uploadProjectImagesToFirebase(project, config) {
-  const pendingUploads = project.images
-    .map((image, index) => ({ image, index }))
-    .filter(({ image }) => isDataUrlImage(image))
-
-  if (!pendingUploads.length) {
-    return project
-  }
-
-  await ensureFirebaseStorageAvailability(config)
-
-  const { storage } = getFirebaseConnection(config)
-  const nextImages = [...project.images]
-  const uploadStamp = Date.now()
-
-  await Promise.all(
-    pendingUploads.map(async ({ image, index }) => {
-      const extension = getImageExtensionFromDataUrl(image)
-      const imageRef = storageRef(
-        storage,
-        `${STORAGE_FOLDER}/${createProjectSlug(project.id) || 'project'}/${uploadStamp}-${index}.${extension}`,
-      )
-
-      await uploadString(imageRef, image, 'data_url')
-      nextImages[index] = await getDownloadURL(imageRef)
-    }),
-  )
+  const images = [...imageGroups.values()]
+    .sort((left, right) => left.order - right.order)
+    .map((group) => group.chunks
+      .sort((left, right) => left.chunkIndex - right.chunkIndex)
+      .map((chunk) => chunk.value)
+      .join(''))
+    .filter(Boolean)
 
   return {
     ...project,
-    images: nextImages,
+    images: images.length ? images : fallbackImages,
   }
+}
+
+async function replaceProjectImagesInFirebase(project, config) {
+  const { db } = getFirebaseConnection(config)
+  const imageChunksRef = collection(db, config.collectionPath, project.id, FIRESTORE_IMAGE_CHUNKS_SUBCOLLECTION)
+  const existingImageChunks = await getDocs(imageChunksRef)
+  const operations = []
+
+  existingImageChunks.forEach((entry) => {
+    operations.push((batch) => {
+      batch.delete(entry.ref)
+    })
+  })
+
+  project.images.forEach((image, imageIndex) => {
+    const chunks = splitFirestoreImageValue(image)
+    const imageId = buildFirestoreImageReference(imageIndex)
+
+    chunks.forEach((chunkValue, chunkIndex) => {
+      const chunkRef = doc(imageChunksRef, `${imageId}--${String(chunkIndex).padStart(4, '0')}`)
+
+      operations.push((batch) => {
+        batch.set(chunkRef, {
+          imageId,
+          order: imageIndex,
+          chunkIndex,
+          value: chunkValue,
+        })
+      })
+    })
+  })
+
+  await commitFirestoreBatchOperations(db, operations)
+}
+
+async function deleteProjectImagesFromFirebase(projectId, config) {
+  const { db } = getFirebaseConnection(config)
+  const imageChunksRef = collection(db, config.collectionPath, projectId, FIRESTORE_IMAGE_CHUNKS_SUBCOLLECTION)
+  const existingImageChunks = await getDocs(imageChunksRef)
+  const operations = []
+
+  existingImageChunks.forEach((entry) => {
+    operations.push((batch) => {
+      batch.delete(entry.ref)
+    })
+  })
+
+  await commitFirestoreBatchOperations(db, operations)
 }
 
 function loadLocalProjects() {
@@ -405,38 +455,52 @@ function loadLocalProjects() {
 
 async function saveProjectToFirebase(project, config) {
   const { collectionRef } = getFirebaseConnection(config)
-  const projectWithHostedImages = await uploadProjectImagesToFirebase(project, config)
+  const firebaseProjectPayload = createFirestoreProjectPayload(project)
 
-  await setDoc(doc(collectionRef, projectWithHostedImages.id), projectWithHostedImages)
+  await replaceProjectImagesInFirebase(project, config)
+  await setDoc(doc(collectionRef, firebaseProjectPayload.id), firebaseProjectPayload)
 
-  return projectWithHostedImages
+  return project
 }
 
 async function deleteProjectFromFirebase(id, config) {
   const { collectionRef } = getFirebaseConnection(config)
+  await deleteProjectImagesFromFirebase(id, config)
   await deleteDoc(doc(collectionRef, id))
 }
 
 async function replaceProjectsInFirebase(entries, config) {
   const normalizedProjects = normalizeProjectCollection(entries)
-  const projectsWithHostedImages = await Promise.all(
-    normalizedProjects.map((project) => uploadProjectImagesToFirebase(project, config)),
-  )
   const { db, collectionRef } = getFirebaseConnection(config)
   const existingProjects = await getDocs(collectionRef)
-  const batch = writeBatch(db)
+
+  await Promise.all(existingProjects.docs.map((entry) => deleteProjectImagesFromFirebase(entry.id, config)))
+
+  const deleteOperations = []
 
   existingProjects.forEach((entry) => {
-    batch.delete(entry.ref)
+    deleteOperations.push((batch) => {
+      batch.delete(entry.ref)
+    })
   })
 
-  projectsWithHostedImages.forEach((project) => {
-    batch.set(doc(collectionRef, project.id), project)
+  await commitFirestoreBatchOperations(db, deleteOperations)
+
+  await Promise.all(normalizedProjects.map((project) => replaceProjectImagesInFirebase(project, config)))
+
+  const createOperations = []
+
+  normalizedProjects.forEach((project) => {
+    const payload = createFirestoreProjectPayload(project)
+
+    createOperations.push((batch) => {
+      batch.set(doc(collectionRef, payload.id), payload)
+    })
   })
 
-  await batch.commit()
+  await commitFirestoreBatchOperations(db, createOperations)
 
-  return projectsWithHostedImages
+  return normalizedProjects
 }
 
 function stopFirebaseSync() {
@@ -461,6 +525,7 @@ function startFirebaseSync(config) {
   const initialLocalProjects = readLocalProjectsSnapshot()
   const { collectionRef } = getFirebaseConnection(config)
   let handledInitialSnapshot = false
+  let snapshotVersion = 0
 
   projectStorageMode.value = 'firebase'
   projectStoragePending.value = true
@@ -470,7 +535,9 @@ function startFirebaseSync(config) {
 
   firebaseUnsubscribe = onSnapshot(
     collectionRef,
-    (snapshot) => {
+    async (snapshot) => {
+      const currentSnapshotVersion = ++snapshotVersion
+
       if (activeFirebaseConfigKey !== signature) {
         return
       }
@@ -499,7 +566,15 @@ function startFirebaseSync(config) {
       }
 
       try {
-        customProjects.value = normalizeProjectCollection(snapshot.docs.map((entry) => entry.data()))
+        const hydratedProjects = await Promise.all(
+          snapshot.docs.map((entry) => readProjectImagesFromFirebase(entry.data(), config)),
+        )
+
+        if (activeFirebaseConfigKey !== signature || currentSnapshotVersion !== snapshotVersion) {
+          return
+        }
+
+        customProjects.value = normalizeProjectCollection(hydratedProjects)
         persistCustomProjects()
         handledInitialSnapshot = true
         projectStoragePending.value = false

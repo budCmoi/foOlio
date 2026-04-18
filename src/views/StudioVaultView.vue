@@ -110,11 +110,11 @@ const storageStatusMessage = computed(() => {
   }
 
   if (projectStoragePending.value) {
-    return 'Synchronisation Firebase en cours. Les projets personnalisés sont reliés à ta collection Firestore.'
+    return 'Synchronisation Firebase en cours. Les projets personnalises et leurs images sont relies a Firestore.'
   }
 
   if (projectStorageMode.value === 'firebase') {
-    return 'Synchronisation Firebase active. Chaque ajout, modification ou suppression passe par ta collection Firestore projects.'
+    return 'Synchronisation Firebase active. Chaque ajout, modification ou suppression passe par Firestore, images incluses.'
   }
 
   return 'Mode local actif. Les projets restent sauvegardés dans ce navigateur.'
@@ -482,7 +482,7 @@ async function handleImport(event) {
           <div class="studio-panel__heading studio-panel__heading--nested">
             <div>
               <h3>Images du projet</h3>
-              <p>Ajoute autant d'images que tu veux. Quand Firebase est actif, les fichiers locaux sont envoyes dans Firebase Storage au moment de l'enregistrement.</p>
+              <p>Ajoute autant d'images que tu veux. Quand Firebase est actif, chaque image est decoupee puis stockee dans Firestore.</p>
             </div>
           </div>
 
