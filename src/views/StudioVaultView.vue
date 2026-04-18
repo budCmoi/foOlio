@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import MagneticLink from '@/components/MagneticLink.vue'
 import { siteProfile } from '@/data/projects'
+import { generateProjectDraftFromSource } from '@/composables/useProjectDraftGenerator'
 import {
   addCustomProject,
   createProjectSlug,
@@ -51,6 +52,8 @@ const form = ref(createEmptyForm())
 const imageUrl = ref('')
 const editingProjectId = ref('')
 const feedback = ref({ type: '', text: '' })
+const generationSource = ref('')
+const isGeneratingDraft = ref(false)
 
 const isEditing = computed(() => Boolean(editingProjectId.value))
 const suggestedSlug = computed(() => createProjectSlug(form.value.id || form.value.title))
@@ -63,6 +66,7 @@ function resetForm() {
   form.value = createEmptyForm()
   imageUrl.value = ''
   editingProjectId.value = ''
+  generationSource.value = ''
   showFeedback('', '')
 }
 
@@ -97,6 +101,56 @@ function buildPayload() {
     tech: form.value.tech,
     results: form.value.results,
     images: form.value.images,
+  }
+}
+
+function applyGeneratedDraft(draft) {
+  form.value = {
+    ...form.value,
+    title: form.value.title || draft.title,
+    description: draft.description || form.value.description,
+    statement: draft.statement || form.value.statement,
+    role: draft.role || form.value.role,
+    link: form.value.link || draft.link,
+    tech: draft.tech?.length ? toMultiline(draft.tech) : form.value.tech,
+    results: draft.results?.length ? toMultiline(draft.results) : form.value.results,
+  }
+}
+
+async function generateDraftFromSource() {
+  const source = generationSource.value.trim() || form.value.link.trim()
+
+  if (!source) {
+    showFeedback('error', 'Ajoute un lien de site ou un repo GitHub public avant de lancer la generation.')
+    return
+  }
+
+  isGeneratingDraft.value = true
+  showFeedback('info', 'Analyse du lien en cours...')
+
+  try {
+    const draft = await generateProjectDraftFromSource(source)
+
+    applyGeneratedDraft(draft)
+    generationSource.value = source
+
+    if (draft.sourceKind === 'github' && !draft.link) {
+      showFeedback('success', 'Brouillon genere depuis GitHub. Ajoute seulement le lien live si le repo n expose pas de homepage et ajoute tes images manuellement.')
+      return
+    }
+
+    if (draft.sourceKind === 'website' && !draft.tech.length) {
+      showFeedback('success', 'Brouillon genere depuis le site. Verifie les technos manuellement si tu veux des tags plus precis.')
+      return
+    }
+
+    showFeedback('success', 'Brouillon genere. Verifie les textes puis ajoute tes images avant d enregistrer.')
+  }
+  catch (error) {
+    showFeedback('error', error instanceof Error ? error.message : 'Impossible de generer un brouillon depuis ce lien.')
+  }
+  finally {
+    isGeneratingDraft.value = false
   }
 }
 
@@ -318,6 +372,29 @@ async function handleImport(event) {
               <input v-model.trim="form.link" type="url" placeholder="https://..." />
               <small>Optionnel. Si tu le laisses vide, le bouton live disparaitra de la page projet.</small>
             </label>
+
+            <div class="studio-field studio-field--full studio-field--generation">
+              <span>Generation depuis un lien</span>
+              <input
+                v-model.trim="generationSource"
+                type="url"
+                placeholder="Colle un site live ou un repo GitHub public"
+              />
+              <small>
+                Colle un lien live ou GitHub puis genere description, phrase d accroche, role et resultats. Avec GitHub,
+                les technos sont aussi proposees. Les images restent manuelles.
+              </small>
+              <div class="studio-field__actions">
+                <button
+                  class="button button--secondary"
+                  type="button"
+                  :disabled="isGeneratingDraft || !(generationSource.trim() || form.link.trim())"
+                  @click="generateDraftFromSource"
+                >
+                  {{ isGeneratingDraft ? 'Generation en cours...' : 'Generer un brouillon depuis ce lien' }}
+                </button>
+              </div>
+            </div>
 
             <label class="studio-field studio-field--full">
               <span>Technologies</span>
