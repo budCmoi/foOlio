@@ -482,7 +482,7 @@ async function handleImport(event) {
           <div class="studio-panel__heading studio-panel__heading--nested">
             <div>
               <h3>Images du projet</h3>
-              <p>Ajoute autant d'images que tu veux. La page detail continuera a s'etendre automatiquement.</p>
+              <p>Ajoute autant d'images que tu veux. Quand Firebase est actif, les fichiers locaux sont envoyes dans Firebase Storage au moment de l'enregistrement.</p>
             </div>
           </div>
 
