@@ -11,6 +11,7 @@ const currentYear = new Date().getFullYear()
         <p class="site-footer__eyebrow">foOlio / Portfolio</p>
         <h2>{{ siteProfile.name }}</h2>
         <p>{{ siteProfile.role }} · {{ siteProfile.location }}</p>
+        <p class="site-footer__signature">{{ siteProfile.signature }}</p>
       </div>
 
       <div class="site-footer__links">
@@ -20,7 +21,8 @@ const currentYear = new Date().getFullYear()
       </div>
 
       <div class="site-footer__meta">
-        <span>© {{ currentYear }} foOlio</span>
+        <span>© {{ currentYear }} Mohamed Ali / foOlio</span>
+        <span>{{ siteProfile.credit }}</span>
         <span>{{ siteProfile.availability }}</span>
       </div>
     </div>
@@ -75,6 +77,14 @@ const currentYear = new Date().getFullYear()
   color: var(--text, rgba(247, 242, 233, 0.88));
   line-height: 1.45;
   font-size: 0.74rem;
+}
+
+.site-footer__signature {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent, #d7ff76);
 }
 
 .site-footer__links {

@@ -4,12 +4,26 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   getFirestore,
   onSnapshot,
   setDoc,
   writeBatch,
 } from 'firebase/firestore'
+import {
+  get,
+  getDatabase,
+  ref as databaseRef,
+  remove as removeDatabaseValue,
+  set as setDatabaseValue,
+} from 'firebase/database'
+import {
+  getDownloadURL,
+  getStorage,
+  ref as storageRef,
+  uploadString,
+} from 'firebase/storage'
 import { baseProjects } from '@/data/projects'
 import {
   getFirebaseProjectStoreConfig,
@@ -20,7 +34,10 @@ import {
 export const privateStudioPath = '/atelier-prive-93f6c1'
 
 const STORAGE_KEY = 'foolio.custom-projects.v1'
+const REALTIME_DATABASE_IMAGE_ROOT = 'portfolioProjectImages'
+const FIREBASE_STORAGE_FOLDER = 'portfolio-projects'
 const FIRESTORE_IMAGE_CHUNKS_SUBCOLLECTION = 'imageChunks'
+const REALTIME_DATABASE_IMAGE_REFERENCE_PREFIX = 'rtdb-image-ref-'
 const FIRESTORE_IMAGE_REFERENCE_PREFIX = 'firestore-image-ref-'
 const LEGACY_FIRESTORE_IMAGE_REFERENCE_PREFIX = 'firestore-image://'
 const MAX_FIRESTORE_IMAGE_CHUNK_LENGTH = 240000
@@ -37,6 +54,7 @@ let firebaseSeedPromise = null
 let lastFailedFirebaseConfigKey = ''
 
 const firebaseConnections = new Map()
+const firebaseStorageAvailability = new Map()
 const { firebaseProjectStoreConfig } = useFirebaseProjectStoreConfig()
 
 function cleanText(value = '') {
@@ -226,8 +244,8 @@ function buildFirebaseErrorMessage(error) {
   const code = cleanText(error?.code)
   const message = cleanText(error?.message)
 
-  if (code === 'permission-denied' || message.includes('Missing or insufficient permissions')) {
-    return 'Firestore refuse l ecriture des projets ou des fragments d images. Publie les regles de firestore.rules puis reessaie.'
+  if (code === 'permission-denied' || code === 'PERMISSION_DENIED' || message.includes('Missing or insufficient permissions') || message.includes('Permission denied')) {
+    return 'Firebase refuse l ecriture distante des projets ou des images. Publie les regles Firestore et Realtime Database puis reessaie.'
   }
 
   if (message.includes('The value of property "array" is longer than')) {
@@ -282,12 +300,30 @@ function getFirebaseConnection(config) {
   }
 
   const db = getFirestore(app)
+  const realtimeDb = getDatabase(app)
   const collectionRef = collection(db, config.collectionPath)
-  const connection = { db, collectionRef }
+  const storage = getStorage(app)
+  const connection = { db, realtimeDb, collectionRef, storage }
 
   firebaseConnections.set(signature, connection)
 
   return connection
+}
+
+function isDataUrlImage(value = '') {
+  return /^data:image\//i.test(cleanText(value))
+}
+
+function buildRealtimeDatabaseImageReference(index) {
+  return `${REALTIME_DATABASE_IMAGE_REFERENCE_PREFIX}${String(index).padStart(2, '0')}`
+}
+
+function isRealtimeDatabaseImageReference(value = '') {
+  return cleanText(value).startsWith(REALTIME_DATABASE_IMAGE_REFERENCE_PREFIX)
+}
+
+function buildRealtimeDatabaseProjectImagesPath(projectId) {
+  return `${REALTIME_DATABASE_IMAGE_ROOT}/${projectId}`
 }
 
 function buildFirestoreImageReference(index) {
@@ -299,6 +335,30 @@ function isFirestoreImageReference(value = '') {
 
   return normalizedValue.startsWith(FIRESTORE_IMAGE_REFERENCE_PREFIX)
     || normalizedValue.startsWith(LEGACY_FIRESTORE_IMAGE_REFERENCE_PREFIX)
+}
+
+function getImageExtensionFromDataUrl(value = '') {
+  const normalizedValue = cleanText(value)
+  const mimeMatch = normalizedValue.match(/^data:(image\/[a-z0-9.+-]+);base64,/i)
+  const mimeType = mimeMatch?.[1]?.toLowerCase() || ''
+
+  if (mimeType.includes('png')) {
+    return 'png'
+  }
+
+  if (mimeType.includes('webp')) {
+    return 'webp'
+  }
+
+  if (mimeType.includes('gif')) {
+    return 'gif'
+  }
+
+  if (mimeType.includes('svg')) {
+    return 'svg'
+  }
+
+  return 'jpg'
 }
 
 function splitFirestoreImageValue(value = '') {
@@ -348,8 +408,232 @@ function createFirestoreProjectPayload(project) {
   }
 }
 
+function createStorageProjectPayload(project) {
+  return { ...project }
+}
+
+function createRealtimeDatabaseProjectPayload(project, imageIndexes) {
+  const imageIndexSet = new Set(imageIndexes)
+
+  return {
+    ...project,
+    images: project.images.map((image, index) => (imageIndexSet.has(index) ? buildRealtimeDatabaseImageReference(index) : image)),
+  }
+}
+
+function getPersistedProjectImageBackend(project = null) {
+  const images = normalizeImages(project?.images)
+
+  if (images.some((image) => isRealtimeDatabaseImageReference(image))) {
+    return 'realtime-db'
+  }
+
+  if (images.some((image) => isFirestoreImageReference(image))) {
+    return 'firestore'
+  }
+
+  return 'storage'
+}
+
+async function ensureFirebaseStorageAvailability(config) {
+  if (!cleanText(config.storageBucket)) {
+    return false
+  }
+
+  const signature = buildFirebaseConfigSignature(config)
+
+  if (firebaseStorageAvailability.has(signature)) {
+    return firebaseStorageAvailability.get(signature)
+  }
+
+  const availabilityPromise = fetch(
+    `https://firebasestorage.googleapis.com/v0/b/${encodeURIComponent(config.storageBucket)}/o?maxResults=1`,
+  )
+    .then((response) => response.ok)
+    .catch(() => false)
+
+  firebaseStorageAvailability.set(signature, availabilityPromise)
+
+  try {
+    const isAvailable = await availabilityPromise
+
+    if (!isAvailable) {
+      firebaseStorageAvailability.delete(signature)
+    }
+
+    return isAvailable
+  }
+  catch {
+    firebaseStorageAvailability.delete(signature)
+    return false
+  }
+}
+
+async function replaceProjectImagesInRealtimeDatabase(project, config) {
+  const localImages = project.images
+    .map((image, index) => ({ image, index }))
+    .filter(({ image }) => isDataUrlImage(image))
+
+  if (!localImages.length) {
+    return null
+  }
+
+  const { realtimeDb } = getFirebaseConnection(config)
+  const imageEntries = {}
+
+  localImages.forEach(({ image, index }) => {
+    imageEntries[buildRealtimeDatabaseImageReference(index)] = {
+      order: index,
+      value: image,
+    }
+  })
+
+  await setDatabaseValue(
+    databaseRef(realtimeDb, buildRealtimeDatabaseProjectImagesPath(project.id)),
+    imageEntries,
+  )
+
+  return createRealtimeDatabaseProjectPayload(
+    project,
+    localImages.map(({ index }) => index),
+  )
+}
+
+async function readProjectImagesFromRealtimeDatabase(project, config) {
+  const normalizedImages = normalizeImages(project.images)
+  const { realtimeDb } = getFirebaseConnection(config)
+  const snapshot = await get(
+    databaseRef(realtimeDb, buildRealtimeDatabaseProjectImagesPath(project.id)),
+  )
+
+  if (!snapshot.exists()) {
+    return {
+      ...project,
+      images: normalizedImages.filter((image) => !isRealtimeDatabaseImageReference(image)),
+    }
+  }
+
+  const nextImages = [...normalizedImages]
+  const imageEntries = Object.values(snapshot.val() || {})
+    .map((entry) => ({
+      order: Number.isFinite(entry?.order) ? entry.order : Number.parseInt(entry?.order, 10) || 0,
+      value: cleanText(entry?.value),
+    }))
+    .filter((entry) => entry.value)
+    .sort((left, right) => left.order - right.order)
+
+  imageEntries.forEach((entry) => {
+    nextImages[entry.order] = entry.value
+  })
+
+  return {
+    ...project,
+    images: nextImages.filter(Boolean),
+  }
+}
+
+async function deleteProjectImagesFromRealtimeDatabase(projectId, config) {
+  const { realtimeDb } = getFirebaseConnection(config)
+
+  await removeDatabaseValue(
+    databaseRef(realtimeDb, buildRealtimeDatabaseProjectImagesPath(projectId)),
+  )
+}
+
+async function uploadProjectImagesToFirebaseStorage(project, config) {
+  const localImages = project.images
+    .map((image, index) => ({ image, index }))
+    .filter(({ image }) => isDataUrlImage(image))
+
+  if (!localImages.length) {
+    return project
+  }
+
+  const storageIsAvailable = await ensureFirebaseStorageAvailability(config)
+
+  if (!storageIsAvailable) {
+    return null
+  }
+
+  const { storage } = getFirebaseConnection(config)
+  const nextImages = [...project.images]
+  const uploadStamp = Date.now()
+
+  try {
+    await Promise.all(
+      localImages.map(async ({ image, index }) => {
+        const extension = getImageExtensionFromDataUrl(image)
+        const imageRef = storageRef(
+          storage,
+          `${FIREBASE_STORAGE_FOLDER}/${createProjectSlug(project.id) || 'project'}/${uploadStamp}-${index}.${extension}`,
+        )
+
+        await uploadString(imageRef, image, 'data_url')
+        nextImages[index] = await getDownloadURL(imageRef)
+      }),
+    )
+
+    return {
+      ...project,
+      images: nextImages,
+    }
+  }
+  catch {
+    return null
+  }
+}
+
+async function persistProjectMediaToFirebase(project, config) {
+  try {
+    const realtimeDatabasePayload = await replaceProjectImagesInRealtimeDatabase(project, config)
+
+    if (realtimeDatabasePayload) {
+      return {
+        backend: 'realtime-db',
+        project,
+        payload: realtimeDatabasePayload,
+      }
+    }
+  }
+  catch {
+  }
+
+  const storageReadyProject = await uploadProjectImagesToFirebaseStorage(project, config)
+
+  if (storageReadyProject) {
+    return {
+      backend: 'storage',
+      project: storageReadyProject,
+      payload: createStorageProjectPayload(storageReadyProject),
+    }
+  }
+
+  await replaceProjectImagesInFirebase(project, config)
+
+  return {
+    backend: 'firestore',
+    project,
+    payload: createFirestoreProjectPayload(project),
+  }
+}
+
 async function readProjectImagesFromFirebase(project, config) {
-  const fallbackImages = normalizeImages(project.images).filter((image) => !isFirestoreImageReference(image))
+  const normalizedImages = normalizeImages(project.images)
+  const imageBackend = getPersistedProjectImageBackend(project)
+
+  if (imageBackend === 'realtime-db') {
+    return readProjectImagesFromRealtimeDatabase(project, config)
+  }
+
+  if (imageBackend !== 'firestore') {
+    return {
+      ...project,
+      images: normalizedImages,
+    }
+  }
+
+  const fallbackImages = normalizedImages.filter((image) => !isFirestoreImageReference(image))
+
   const { db } = getFirebaseConnection(config)
   const imageChunksRef = collection(db, config.collectionPath, project.id, FIRESTORE_IMAGE_CHUNKS_SUBCOLLECTION)
   const imageChunksSnapshot = await getDocs(imageChunksRef)
@@ -446,6 +730,17 @@ async function deleteProjectImagesFromFirebase(projectId, config) {
   await commitFirestoreBatchOperations(db, operations)
 }
 
+async function cleanupProjectMediaForBackend(projectId, config, backend) {
+  if (backend === 'realtime-db') {
+    await deleteProjectImagesFromRealtimeDatabase(projectId, config)
+    return
+  }
+
+  if (backend === 'firestore') {
+    await deleteProjectImagesFromFirebase(projectId, config)
+  }
+}
+
 function loadLocalProjects() {
   customProjects.value = readLocalProjectsSnapshot()
   localHydrated = true
@@ -455,18 +750,36 @@ function loadLocalProjects() {
 
 async function saveProjectToFirebase(project, config) {
   const { collectionRef } = getFirebaseConnection(config)
-  const firebaseProjectPayload = createFirestoreProjectPayload(project)
+  const projectRef = doc(collectionRef, project.id)
+  const previousSnapshot = await getDoc(projectRef)
+  const previousBackend = previousSnapshot.exists()
+    ? getPersistedProjectImageBackend(previousSnapshot.data())
+    : ''
+  const { backend, project: persistedProject, payload } = await persistProjectMediaToFirebase(project, config)
 
-  await replaceProjectImagesInFirebase(project, config)
-  await setDoc(doc(collectionRef, firebaseProjectPayload.id), firebaseProjectPayload)
+  await setDoc(projectRef, payload)
 
-  return project
+  if (previousBackend && previousBackend !== backend) {
+    await cleanupProjectMediaForBackend(project.id, config, previousBackend)
+  }
+
+  return persistedProject
 }
 
 async function deleteProjectFromFirebase(id, config) {
   const { collectionRef } = getFirebaseConnection(config)
-  await deleteProjectImagesFromFirebase(id, config)
-  await deleteDoc(doc(collectionRef, id))
+  const projectRef = doc(collectionRef, id)
+  const existingProjectSnapshot = await getDoc(projectRef)
+
+  if (existingProjectSnapshot.exists()) {
+    await cleanupProjectMediaForBackend(
+      id,
+      config,
+      getPersistedProjectImageBackend(existingProjectSnapshot.data()),
+    )
+  }
+
+  await deleteDoc(projectRef)
 }
 
 async function replaceProjectsInFirebase(entries, config) {
@@ -474,7 +787,13 @@ async function replaceProjectsInFirebase(entries, config) {
   const { db, collectionRef } = getFirebaseConnection(config)
   const existingProjects = await getDocs(collectionRef)
 
-  await Promise.all(existingProjects.docs.map((entry) => deleteProjectImagesFromFirebase(entry.id, config)))
+  await Promise.all(
+    existingProjects.docs.map((entry) => cleanupProjectMediaForBackend(
+      entry.id,
+      config,
+      getPersistedProjectImageBackend(entry.data()),
+    )),
+  )
 
   const deleteOperations = []
 
@@ -486,13 +805,13 @@ async function replaceProjectsInFirebase(entries, config) {
 
   await commitFirestoreBatchOperations(db, deleteOperations)
 
-  await Promise.all(normalizedProjects.map((project) => replaceProjectImagesInFirebase(project, config)))
+  const persistedProjects = await Promise.all(
+    normalizedProjects.map((project) => persistProjectMediaToFirebase(project, config)),
+  )
 
   const createOperations = []
 
-  normalizedProjects.forEach((project) => {
-    const payload = createFirestoreProjectPayload(project)
-
+  persistedProjects.forEach(({ payload }) => {
     createOperations.push((batch) => {
       batch.set(doc(collectionRef, payload.id), payload)
     })
@@ -500,7 +819,7 @@ async function replaceProjectsInFirebase(entries, config) {
 
   await commitFirestoreBatchOperations(db, createOperations)
 
-  return normalizedProjects
+  return persistedProjects.map(({ project }) => project)
 }
 
 function stopFirebaseSync() {
