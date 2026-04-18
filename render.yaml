@@ -9,7 +9,4 @@ services:
       - key: NODE_VERSION
         value: 22.22.0
       - key: DATABASE_URL
-        value: file:/var/data/foolio.db
-    disks:
-      - name: foolio-data
-        mountPath: /var/data
+        value: file:/tmp/foolio.db
