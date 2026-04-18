@@ -1,6 +1,7 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import MagneticLink from '@/components/MagneticLink.vue'
+import { siteProfile } from '@/data/projects'
 import { createRevealTrigger, gsap, splitReveal, useGSAPContext } from '@/composables/useGSAP'
 
 const root = ref(null)
@@ -36,15 +37,15 @@ onBeforeUnmount(() => {
     <div class="contact-panel__surface">
       <p class="section-tag contact-panel__status" data-contact-item>
         <span class="contact-panel__status-dot" aria-hidden="true"></span>
-        Ouvert aux missions
+        Disponible pour des produits web et workflows IA
       </p>
-      <h2 ref="title" class="contact-panel__title">Construisons une présence numérique impossible à ignorer.</h2>
+      <h2 ref="title" class="contact-panel__title">Parlons produit, frontend, full-stack et automatisation IA.</h2>
       <p class="contact-panel__copy" data-contact-item>
-        Du portfolio signature au microsite pensé pour un lancement, je conçois et livre des interfaces tactiles avec du mouvement, de la clarté et une vraie discipline de production.
+        Si tu veux un site qui ressemble à un produit, une app métier plus propre, un studio interne connecté à Firebase ou une couche IA bien cadrée, on peut le construire sérieusement.
       </p>
       <div class="contact-panel__actions" data-contact-item>
-        <MagneticLink class="button button--primary button--light" href="mailto:hello@foolio.dev" cursor="Mail">
-          hello@foolio.dev
+        <MagneticLink class="button button--primary button--light" :href="`mailto:${siteProfile.email}`" cursor="Mail">
+          {{ siteProfile.email }}
         </MagneticLink>
         <MagneticLink class="button button--ghost button--light" :to="{ path: '/', hash: '#projects' }" cursor="Voir">
           Revoir les projets

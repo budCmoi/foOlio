@@ -9,21 +9,21 @@ const track = ref(null)
 const panels = [
   {
     index: '01',
-    title: 'Scénariser le défilement',
-    description: 'Chaque section est cadrée comme une scène avec un temps émotionnel clair, une vitesse précise et une logique de transition nette.',
-    tags: ['Rythme narratif', 'Hiérarchie de l\'information', 'Transitions de scène'],
+    title: 'Concevoir le frontend comme un produit',
+    description: 'Les composants, les états et les transitions doivent rester clairs sous charge réelle, pas seulement dans une maquette propre.',
+    tags: ['Composants robustes', 'États lisibles', 'UX de production'],
   },
   {
     index: '02',
-    title: 'Construire le motion comme un système',
-    description: 'Des timelines réutilisables, des moments épinglés, du split text et des retours au survol qui restent modulaires au lieu d\'être improvisés.',
-    tags: ['Timelines GSAP', 'Split text', 'Parallaxe maîtrisée'],
+    title: 'Relier UI, logique et données',
+    description: 'Je préfère une app où le studio, le routing et la persistence avancent ensemble plutôt qu\'une interface belle mais fragile au premier changement.',
+    tags: ['Vue 3', 'Firebase', 'Architecture évolutive'],
   },
   {
     index: '03',
-    title: 'Régler pour les vrais appareils',
-    description: 'Les effets lourds s\'effacent sur mobile pendant que la typographie, le rythme et la hiérarchie conservent une sensation premium.',
-    tags: ['Réduction mobile', 'Chargement différé', 'Discipline performance'],
+    title: 'Automatiser avec l\'IA quand ça vaut le coup',
+    description: 'Résumé, génération assistée, enrichissement ou outils internes : l\'IA entre dans le produit quand elle réduit du travail utile et reste maîtrisable.',
+    tags: ['Workflows IA', 'Assistant interne', 'Automatisation ciblée'],
   },
 ]
 
@@ -161,9 +161,9 @@ onBeforeUnmount(() => {
     <div class="section-heading">
       <p class="section-tag">Processus</p>
       <div>
-        <h2>Du mouvement avec de la structure, pas de la décoration.</h2>
+        <h2>Du code propre, une base solide et juste assez de mouvement pour donner du relief.</h2>
         <p>
-          Le but n\'est pas d\'animer partout. Le but est que chaque mouvement semble inévitable.
+          Le but n\'est pas de mettre de l\'effet partout. Le but est de livrer un produit qui reste clair, rapide et extensible.
         </p>
       </div>
     </div>

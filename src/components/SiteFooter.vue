@@ -14,7 +14,7 @@ const currentYear = new Date().getFullYear()
       </div>
 
       <div class="site-footer__links">
-        <a href="mailto:hello@foolio.dev">hello@foolio.dev</a>
+        <a :href="`mailto:${siteProfile.email}`">{{ siteProfile.email }}</a>
         <a href="/#projects">Projets</a>
         <a href="/#contact">Contact</a>
       </div>

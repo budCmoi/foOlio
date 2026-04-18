@@ -17,18 +17,18 @@ const featuredProject = computed(() => projects.value[0] ?? null)
 const manifestCards = [
   {
     index: '01',
-    title: 'Interfaces guidées par la narration',
-    text: 'Je compose les layouts comme des séquences : révélation, contraste, pause et relâchement. La structure porte le récit avant même le mouvement.',
+    title: 'Frontend net, pensé pour durer',
+    text: 'Je construis des interfaces lisibles, rapides et maintenables, avec une attention forte aux états, aux transitions et à la qualité d\'intégration.',
   },
   {
     index: '02',
-    title: 'Architecture de cas évolutive',
-    text: 'Les projets vivent dans la donnée, les routes restent dynamiques, et les sections s\'étendent sans imposer de refonte à chaque changement de contenu.',
+    title: 'Produit full-stack cohérent',
+    text: 'Le frontend, la donnée, les routes et l\'admin doivent évoluer ensemble. J\'aime les systèmes simples à relire, rapides à faire bouger et faciles à faire grandir.',
   },
   {
     index: '03',
-    title: 'Sensation premium sous contraintes',
-    text: 'L\'interface reste nette sur les appareils tactiles en réduisant les effets lourds tout en conservant la typographie, la hiérarchie et le rythme.',
+    title: 'IA utile, cadrée par le produit',
+    text: 'J\'ajoute de l\'automatisation, de la génération ou de l\'assistance IA quand cela réduit vraiment la friction côté équipe ou côté utilisateur.',
   },
 ]
 
@@ -80,9 +80,9 @@ onBeforeUnmount(() => {
     <section class="manifest page-block" data-page-intro>
       <div class="manifest__copy">
         <p class="section-tag">Approche</p>
-        <h2 ref="manifestTitle">Les interfaces haut de gamme paraissent fluides parce que chaque couche sait exactement pourquoi elle bouge.</h2>
+        <h2 ref="manifestTitle">Je construis des produits web où l'interface, la donnée et l'IA travaillent comme un seul système.</h2>
         <p>
-          Le travail se place à l\'intersection de la théâtralité de marque et d\'une ingénierie frontend propre : typographie expressive, rythme maîtrisé et systèmes de motion capables d\'absorber du vrai contenu.
+          Mon terrain de jeu : apps Vue, interfaces d\'admin, expériences produit premium, synchro Firebase et automatisations IA qui servent le business au lieu d\'ajouter du bruit.
         </p>
       </div>
 
@@ -101,9 +101,9 @@ onBeforeUnmount(() => {
       <div class="section-heading projects-section__heading">
         <div class="projects-section__intro">
           <p class="section-tag">Sélection</p>
-          <h2>Des projets alimentés par un système de données évolutif.</h2>
+          <h2>Des produits pilotés par la donnée, conçus pour évoluer sans se casser.</h2>
           <p>
-            Chaque carte est générée depuis une source commune, routée dynamiquement et prête à s'étendre sans toucher à la structure de la page.
+            J\'aime les bases qui restent propres quand le contenu change, qu\'un studio interne apparaît ou qu\'une couche IA doit se brancher plus tard sans tout réécrire.
           </p>
         </div>
 
@@ -123,7 +123,7 @@ onBeforeUnmount(() => {
           </div>
 
           <div class="projects-section__spotlight-copy">
-            <span class="projects-section__spotlight-label">Cas en lumière</span>
+            <span class="projects-section__spotlight-label">Projet en focus</span>
             <strong>{{ featuredProject.title }}</strong>
             <p>{{ featuredProject.statement }}</p>
 

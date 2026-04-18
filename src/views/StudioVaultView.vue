@@ -46,7 +46,12 @@ function readFileAsDataUrl(file) {
   })
 }
 
-const { customProjects } = useProjects()
+const {
+  customProjects,
+  projectStorageError,
+  projectStorageMode,
+  projectStoragePending,
+} = useProjects()
 
 const form = ref(createEmptyForm())
 const imageUrl = ref('')
@@ -57,6 +62,22 @@ const isGeneratingDraft = ref(false)
 
 const isEditing = computed(() => Boolean(editingProjectId.value))
 const suggestedSlug = computed(() => createProjectSlug(form.value.id || form.value.title))
+const storageStatusTone = computed(() => (projectStorageError.value ? 'is-error' : 'is-success'))
+const storageStatusMessage = computed(() => {
+  if (projectStorageError.value) {
+    return `${projectStorageError.value} Les changements restent sauvegardés localement dans ce navigateur.`
+  }
+
+  if (projectStoragePending.value) {
+    return 'Synchronisation Firebase en cours. Les projets personnalisés sont reliés à ta collection Firestore.'
+  }
+
+  if (projectStorageMode.value === 'firebase') {
+    return 'Synchronisation Firebase active. Chaque ajout, modification ou suppression passe par ta collection Firestore projects.'
+  }
+
+  return 'Mode local actif. Les projets restent sauvegardés dans ce navigateur.'
+})
 
 function showFeedback(type, text) {
   feedback.value = { type, text }
@@ -154,12 +175,12 @@ async function generateDraftFromSource() {
   }
 }
 
-function submitForm() {
+async function submitForm() {
   try {
     const payload = buildPayload()
     const project = isEditing.value
-      ? updateCustomProject(editingProjectId.value, payload)
-      : addCustomProject(payload)
+      ? await updateCustomProject(editingProjectId.value, payload)
+      : await addCustomProject(payload)
 
     resetForm()
     showFeedback(
@@ -220,14 +241,20 @@ function removeImage(index) {
   form.value.images = form.value.images.filter((_, entryIndex) => entryIndex !== index)
 }
 
-function deleteProject(project) {
-  const confirmed = window.confirm(`Supprimer ${project.title} du navigateur ?`)
+async function deleteProject(project) {
+  const confirmed = window.confirm(`Supprimer ${project.title} du studio ?`)
 
   if (!confirmed) {
     return
   }
 
-  removeCustomProject(project.id)
+  try {
+    await removeCustomProject(project.id)
+  }
+  catch (error) {
+    showFeedback('error', error instanceof Error ? error.message : 'Suppression impossible.')
+    return
+  }
 
   if (editingProjectId.value === project.id) {
     resetForm()
@@ -269,7 +296,7 @@ async function handleImport(event) {
 
   try {
     const json = await file.text()
-    const importedProjects = importCustomProjects(json)
+    const importedProjects = await importCustomProjects(json)
     showFeedback('success', `${importedProjects.length} projet(s) personnalise(s) importe(s).`)
   }
   catch (error) {
@@ -287,10 +314,10 @@ async function handleImport(event) {
       <div class="section-heading">
         <p class="section-tag">Acces prive</p>
         <div>
-          <h1>Ajouter un projet depuis une interface cachee, sans toucher au code.</h1>
+          <h1>Ajouter un projet depuis un studio prive, synchronise avec Firebase.</h1>
           <p>
             Cette page n'apparait nulle part dans la navigation publique. Chaque projet ajoute ici s'affiche ensuite sur l'accueil,
-            possede sa propre page detail et la galerie continue naturellement aussi longtemps qu'il y a des images a faire defiler.
+            possede sa propre page detail et reste synchronise via Firestore pour eviter de dependre uniquement du localStorage.
           </p>
         </div>
       </div>
@@ -307,6 +334,10 @@ async function handleImport(event) {
           <input type="file" accept="application/json" @change="handleImport" />
         </label>
       </div>
+
+      <p class="studio-feedback" :class="storageStatusTone">
+        {{ storageStatusMessage }}
+      </p>
     </section>
 
     <section class="studio-grid page-block">
@@ -317,7 +348,7 @@ async function handleImport(event) {
             <h2>{{ isEditing ? 'Modifier un projet personnalise' : 'Ajouter un nouveau projet' }}</h2>
             <p>
               Renseigne tout ce que le visiteur voit deja sur une page projet : titre, description, phrase d'accroche,
-              technologies, resultats, images et lien live si tu veux l'afficher.
+              technologies, resultats, images et lien live. Le contenu est ensuite synchronise dans Firebase.
             </p>
           </div>
         </div>
@@ -356,7 +387,7 @@ async function handleImport(event) {
 
             <label class="studio-field">
               <span>Role</span>
-              <input v-model.trim="form.role" type="text" placeholder="Direction creative / Motion frontend" required />
+              <input v-model.trim="form.role" type="text" placeholder="Full-stack / AI engineer" required />
             </label>
 
             <label class="studio-field">
@@ -448,7 +479,7 @@ async function handleImport(event) {
           </p>
 
           <div class="studio-form__actions">
-            <button class="button button--primary" type="submit">
+            <button class="button button--primary" type="submit" :disabled="projectStoragePending">
               {{ isEditing ? 'Mettre a jour le projet' : 'Enregistrer le projet' }}
             </button>
             <button class="button button--ghost" type="button" @click="resetForm">
@@ -494,7 +525,7 @@ async function handleImport(event) {
           <p class="studio-sidebar__eyebrow">foOlio / Footer</p>
           <strong>{{ siteProfile.name }}</strong>
           <p>{{ siteProfile.role }} · {{ siteProfile.location }}</p>
-          <a href="mailto:hello@foolio.dev">hello@foolio.dev</a>
+          <a :href="`mailto:${siteProfile.email}`">{{ siteProfile.email }}</a>
           <span>© {{ currentYear }} foOlio</span>
         </div>
       </aside>

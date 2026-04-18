@@ -1,4 +1,5 @@
 <script setup>
+import anime from 'animejs/lib/anime.es.js'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import MagneticLink from '@/components/MagneticLink.vue'
 import { siteProfile } from '@/data/projects'
@@ -9,6 +10,63 @@ const title = ref(null)
 const visual = ref(null)
 const { add } = useGSAPContext(root)
 const cleanups = []
+const heroCardAnimations = []
+
+function stopHeroCardAnimations() {
+  heroCardAnimations.splice(0).forEach((animation) => animation.pause())
+
+  if (root.value) {
+    anime.remove(root.value.querySelectorAll('.hero-card'))
+  }
+}
+
+function startHeroCardAnimations() {
+  if (!root.value) {
+    return
+  }
+
+  stopHeroCardAnimations()
+
+  const primaryCard = root.value.querySelector('.hero-card--primary')
+  const accentCard = root.value.querySelector('.hero-card--accent')
+  const ghostCard = root.value.querySelector('.hero-card--ghost')
+
+  if (!primaryCard || !accentCard || !ghostCard) {
+    return
+  }
+
+  heroCardAnimations.push(
+    anime({
+      targets: primaryCard,
+      translateY: [-10, 10],
+      rotate: [-1.4, 0.8],
+      duration: 5600,
+      easing: 'easeInOutSine',
+      direction: 'alternate',
+      loop: true,
+    }),
+    anime({
+      targets: accentCard,
+      translateX: [-6, 8],
+      translateY: [-16, 8],
+      rotate: [1.2, -1.6],
+      duration: 4700,
+      easing: 'easeInOutSine',
+      direction: 'alternate',
+      loop: true,
+    }),
+    anime({
+      targets: ghostCard,
+      translateX: [8, -7],
+      translateY: [-9, 11],
+      rotate: [-0.9, 1.1],
+      duration: 6200,
+      easing: 'easeInOutSine',
+      direction: 'alternate',
+      loop: true,
+    }),
+  )
+}
 
 onMounted(() => {
   add(() => {
@@ -77,6 +135,12 @@ onMounted(() => {
         clearProps: 'filter',
       }, 0.05)
 
+    intro.call(() => {
+      if (!prefersReducedMotion) {
+        startHeroCardAnimations()
+      }
+    })
+
     if (prefersReducedMotion) {
       return
     }
@@ -92,34 +156,7 @@ onMounted(() => {
       ease: 'sine.inOut',
     })
 
-    gsap.to('.hero-card--primary', {
-      yPercent: -4,
-      rotateZ: -1.2,
-      duration: 5.8,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut',
-    })
-
-    gsap.to('.hero-card--accent', {
-      yPercent: -8,
-      xPercent: -1.5,
-      rotateZ: 1.5,
-      duration: 4.2,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut',
-    })
-
-    gsap.to('.hero-card--ghost', {
-      yPercent: -5,
-      xPercent: 1.2,
-      rotateZ: -0.8,
-      duration: 6.6,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut',
-    })
+    cleanups.push(stopHeroCardAnimations)
 
     if (!compactViewport && visual.value) {
       const rotateXTo = gsap.quickTo(visual.value, 'rotateX', {
@@ -194,18 +231,18 @@ onBeforeUnmount(() => {
 
     <div class="hero__grid">
       <div class="hero__copy">
-        <p class="section-tag" data-hero-fade>Portfolio 2026</p>
-        <h1 ref="title" class="hero__title">Des mouvements pensés pour donner de la gravité à une présence.</h1>
+        <p class="section-tag" data-hero-fade>AI dev / Full-stack / Vue</p>
+        <h1 ref="title" class="hero__title">Je construis des produits web rapides, lisibles et augmentés par l'IA quand elle est vraiment utile.</h1>
         <p class="hero__lead" data-hero-fade>
           {{ siteProfile.intro }}
         </p>
 
         <div class="hero__actions" data-hero-fade>
           <MagneticLink class="button button--primary" :to="{ path: '/', hash: '#projects' }" cursor="Voir">
-            Projets choisis
+            Voir les projets
           </MagneticLink>
           <MagneticLink class="button button--secondary" :to="{ path: '/', hash: '#contact' }" cursor="Contact">
-            Démarrer la conversation
+            Me contacter
           </MagneticLink>
         </div>
       </div>
@@ -215,20 +252,20 @@ onBeforeUnmount(() => {
 
         <article class="hero-card hero-card--primary">
           <span>01</span>
-          <strong>Systèmes de scroll fluides</strong>
-          <p>Lenis et ScrollTrigger réglés pour sembler tactiles, jamais décoratifs.</p>
+          <strong>Frontend précis</strong>
+          <p>Vue 3, composants solides, animations utiles et interfaces qui restent propres quand le produit grandit.</p>
         </article>
 
         <article class="hero-card hero-card--accent">
           <span>02</span>
-          <strong>Un motion maîtrisé</strong>
-          <p>Assez expressif pour paraître premium, assez discipliné pour être livré proprement.</p>
+          <strong>Full-stack pragmatique</strong>
+          <p>Routing, données, studio interne et persistence branchés ensemble sans transformer le code en usine.</p>
         </article>
 
         <article class="hero-card hero-card--ghost">
           <span>03</span>
-          <strong>Le système avant le spectacle</strong>
-          <p>Sections réutilisables, données dynamiques et architecture de cas évolutive.</p>
+          <strong>IA branchée au bon endroit</strong>
+          <p>Génération assistée, enrichissement de contenu et automatisations utiles, avec un vrai cadre produit autour.</p>
         </article>
       </div>
     </div>

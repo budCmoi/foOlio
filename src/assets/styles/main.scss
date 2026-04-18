@@ -1757,6 +1757,16 @@ figure {
   font-size: 0.82rem;
 }
 
+.studio-toolbar .button:disabled,
+.studio-field__actions .button:disabled,
+.studio-images__toolbar .button:disabled,
+.studio-form__actions .button:disabled,
+.studio-image-card__actions .button:disabled,
+.studio-project-item__actions .button:disabled {
+  opacity: 0.58;
+  pointer-events: none;
+}
+
 .studio-image-list,
 .studio-project-list {
   display: grid;

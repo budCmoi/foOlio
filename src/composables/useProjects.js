@@ -1,12 +1,38 @@
-import { computed, readonly, ref } from 'vue'
+import { computed, readonly, ref, watch } from 'vue'
+import { getApps, initializeApp } from 'firebase/app'
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  getFirestore,
+  onSnapshot,
+  setDoc,
+  writeBatch,
+} from 'firebase/firestore'
 import { baseProjects } from '@/data/projects'
+import {
+  getFirebaseProjectStoreConfig,
+  hydrateFirebaseProjectStoreConfig,
+  useFirebaseProjectStoreConfig,
+} from '@/composables/useFirebaseProjectStoreConfig'
 
 export const privateStudioPath = '/atelier-prive-93f6c1'
 
 const STORAGE_KEY = 'foolio.custom-projects.v1'
 const customProjects = ref([])
+const projectStorageMode = ref('local')
+const projectStorageError = ref('')
+const projectStoragePending = ref(false)
 
-let hydrated = false
+let localHydrated = false
+let firebaseUnsubscribe = null
+let activeFirebaseConfigKey = ''
+let firebaseSeedPromise = null
+let lastFailedFirebaseConfigKey = ''
+
+const firebaseConnections = new Map()
+const { firebaseProjectStoreConfig } = useFirebaseProjectStoreConfig()
 
 function cleanText(value = '') {
   return String(value ?? '').trim()
@@ -116,11 +142,37 @@ function normalizeProject(input, fallback = {}) {
   }
 }
 
+function readLocalProjectsSnapshot() {
+  if (typeof window === 'undefined') {
+    return []
+  }
+
+  try {
+    const rawValue = window.localStorage.getItem(STORAGE_KEY)
+
+    if (!rawValue) {
+      return []
+    }
+
+    const parsed = JSON.parse(rawValue)
+
+    if (!Array.isArray(parsed)) {
+      return []
+    }
+
+    return normalizeProjectCollection(parsed)
+  }
+  catch {
+    return []
+  }
+}
+
 function persistCustomProjects() {
   if (typeof window === 'undefined') {
     return
   }
 
+  localHydrated = true
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(customProjects.value))
 }
 
@@ -147,33 +199,212 @@ function normalizeProjectCollection(entries, allowStaticConflicts = false) {
   return sortProjects(normalizedProjects)
 }
 
+function buildFirebaseConfigSignature(config) {
+  if (!config) {
+    return ''
+  }
+
+  return JSON.stringify({
+    apiKey: config.apiKey,
+    authDomain: config.authDomain,
+    databaseURL: config.databaseURL,
+    projectId: config.projectId,
+    storageBucket: config.storageBucket,
+    messagingSenderId: config.messagingSenderId,
+    appId: config.appId,
+    measurementId: config.measurementId,
+    collectionPath: config.collectionPath,
+  })
+}
+
+function buildFirebaseErrorMessage(error) {
+  const message = cleanText(error?.message)
+
+  if (message) {
+    return `Firebase indisponible: ${message}`
+  }
+
+  return 'Firebase indisponible. Verifie la configuration web et les regles Firestore.'
+}
+
+function getFirestoreConnection(config) {
+  const signature = buildFirebaseConfigSignature(config)
+
+  if (firebaseConnections.has(signature)) {
+    return firebaseConnections.get(signature)
+  }
+
+  const appName = `foolio-${config.projectId}-${config.collectionPath}`.replace(/[^a-z0-9-]+/gi, '-')
+  let app = getApps().find((candidate) => candidate.name === appName)
+
+  if (!app) {
+    app = initializeApp(
+      {
+        apiKey: config.apiKey,
+        authDomain: config.authDomain || undefined,
+        databaseURL: config.databaseURL || undefined,
+        projectId: config.projectId,
+        storageBucket: config.storageBucket || undefined,
+        messagingSenderId: config.messagingSenderId || undefined,
+        appId: config.appId,
+        measurementId: config.measurementId || undefined,
+      },
+      appName,
+    )
+  }
+
+  const db = getFirestore(app)
+  const collectionRef = collection(db, config.collectionPath)
+  const connection = { db, collectionRef }
+
+  firebaseConnections.set(signature, connection)
+
+  return connection
+}
+
+function loadLocalProjects() {
+  customProjects.value = readLocalProjectsSnapshot()
+  localHydrated = true
+  projectStorageMode.value = 'local'
+  projectStoragePending.value = false
+}
+
+async function saveProjectToFirebase(project, config) {
+  const { collectionRef } = getFirestoreConnection(config)
+  await setDoc(doc(collectionRef, project.id), project)
+  return project
+}
+
+async function deleteProjectFromFirebase(id, config) {
+  const { collectionRef } = getFirestoreConnection(config)
+  await deleteDoc(doc(collectionRef, id))
+}
+
+async function replaceProjectsInFirebase(entries, config) {
+  const normalizedProjects = normalizeProjectCollection(entries)
+  const { db, collectionRef } = getFirestoreConnection(config)
+  const existingProjects = await getDocs(collectionRef)
+  const batch = writeBatch(db)
+
+  existingProjects.forEach((entry) => {
+    batch.delete(entry.ref)
+  })
+
+  normalizedProjects.forEach((project) => {
+    batch.set(doc(collectionRef, project.id), project)
+  })
+
+  await batch.commit()
+
+  return normalizedProjects
+}
+
+function stopFirebaseSync() {
+  firebaseUnsubscribe?.()
+  firebaseUnsubscribe = null
+  activeFirebaseConfigKey = ''
+  firebaseSeedPromise = null
+}
+
+function startFirebaseSync(config) {
+  const signature = buildFirebaseConfigSignature(config)
+  const initialLocalProjects = readLocalProjectsSnapshot()
+  const { collectionRef } = getFirestoreConnection(config)
+  let handledInitialSnapshot = false
+
+  projectStorageMode.value = 'firebase'
+  projectStoragePending.value = true
+  projectStorageError.value = ''
+  activeFirebaseConfigKey = signature
+  lastFailedFirebaseConfigKey = ''
+
+  firebaseUnsubscribe = onSnapshot(
+    collectionRef,
+    (snapshot) => {
+      if (activeFirebaseConfigKey !== signature) {
+        return
+      }
+
+      if (snapshot.empty) {
+        if (!handledInitialSnapshot && initialLocalProjects.length && !firebaseSeedPromise) {
+          firebaseSeedPromise = replaceProjectsInFirebase(initialLocalProjects, config)
+            .catch((error) => {
+              projectStorageError.value = buildFirebaseErrorMessage(error)
+            })
+            .finally(() => {
+              firebaseSeedPromise = null
+            })
+
+          customProjects.value = sortProjects(initialLocalProjects)
+          persistCustomProjects()
+        }
+        else {
+          customProjects.value = []
+          persistCustomProjects()
+        }
+
+        handledInitialSnapshot = true
+        projectStoragePending.value = false
+        return
+      }
+
+      try {
+        customProjects.value = normalizeProjectCollection(snapshot.docs.map((entry) => entry.data()))
+        persistCustomProjects()
+        handledInitialSnapshot = true
+        projectStoragePending.value = false
+        projectStorageError.value = ''
+      }
+      catch (error) {
+        customProjects.value = []
+        projectStoragePending.value = false
+        projectStorageError.value = buildFirebaseErrorMessage(error)
+      }
+    },
+    (error) => {
+      lastFailedFirebaseConfigKey = signature
+      stopFirebaseSync()
+      projectStorageError.value = buildFirebaseErrorMessage(error)
+      loadLocalProjects()
+    },
+  )
+}
+
 export function hydrateProjectsStore() {
-  if (hydrated || typeof window === 'undefined') {
+  if (typeof window === 'undefined') {
     return
   }
 
-  hydrated = true
+  hydrateFirebaseProjectStoreConfig()
 
-  try {
-    const rawValue = window.localStorage.getItem(STORAGE_KEY)
+  const firebaseConfig = getFirebaseProjectStoreConfig()
 
-    if (!rawValue) {
+  if (firebaseConfig) {
+    const signature = buildFirebaseConfigSignature(firebaseConfig)
+
+    if (lastFailedFirebaseConfigKey === signature) {
+      loadLocalProjects()
       return
     }
 
-    const parsed = JSON.parse(rawValue)
-
-    if (!Array.isArray(parsed)) {
-      customProjects.value = []
-      return
+    if (activeFirebaseConfigKey !== signature || !firebaseUnsubscribe) {
+      stopFirebaseSync()
+      startFirebaseSync(firebaseConfig)
     }
 
-    customProjects.value = normalizeProjectCollection(parsed)
+    return
   }
-  catch {
-    customProjects.value = []
+
+  stopFirebaseSync()
+
+  if (!localHydrated || projectStorageMode.value !== 'local') {
+    loadLocalProjects()
   }
 }
+
+watch(firebaseProjectStoreConfig, () => {
+  hydrateProjectsStore()
+}, { deep: true })
 
 export const projects = computed(() => {
   hydrateProjectsStore()
@@ -185,25 +416,41 @@ export function findProjectById(id) {
   return projects.value.find((project) => project.id === id) ?? null
 }
 
-export function addCustomProject(input) {
+export async function addCustomProject(input) {
   hydrateProjectsStore()
 
   const project = normalizeProject(input)
+  const firebaseConfig = getFirebaseProjectStoreConfig()
 
   if (findProjectById(project.id)) {
     throw new Error('Un projet utilise deja cet identifiant.')
   }
 
-  customProjects.value = sortProjects([project, ...customProjects.value])
-  persistCustomProjects()
+  if (firebaseConfig) {
+    projectStoragePending.value = true
+
+    try {
+      await saveProjectToFirebase(project, firebaseConfig)
+      projectStorageError.value = ''
+    }
+    catch (error) {
+      projectStoragePending.value = false
+      throw new Error(buildFirebaseErrorMessage(error))
+    }
+  }
+  else {
+    customProjects.value = sortProjects([project, ...customProjects.value])
+    persistCustomProjects()
+  }
 
   return project
 }
 
-export function updateCustomProject(originalId, input) {
+export async function updateCustomProject(originalId, input) {
   hydrateProjectsStore()
 
   const currentProject = customProjects.value.find((project) => project.id === originalId)
+  const firebaseConfig = getFirebaseProjectStoreConfig()
 
   if (!currentProject) {
     throw new Error('Impossible de retrouver ce projet personnalise.')
@@ -224,19 +471,54 @@ export function updateCustomProject(originalId, input) {
     throw new Error('Cet identifiant est deja utilise par un autre projet.')
   }
 
-  customProjects.value = sortProjects(
-    customProjects.value.map((project) => (project.id === originalId ? nextProject : project)),
-  )
+  if (firebaseConfig) {
+    projectStoragePending.value = true
 
-  persistCustomProjects()
+    try {
+      if (nextProject.id !== originalId) {
+        await deleteProjectFromFirebase(originalId, firebaseConfig)
+      }
+
+      await saveProjectToFirebase(nextProject, firebaseConfig)
+      projectStorageError.value = ''
+    }
+    catch (error) {
+      projectStoragePending.value = false
+      throw new Error(buildFirebaseErrorMessage(error))
+    }
+  }
+  else {
+    customProjects.value = sortProjects(
+      customProjects.value.map((project) => (project.id === originalId ? nextProject : project)),
+    )
+
+    persistCustomProjects()
+  }
 
   return nextProject
 }
 
-export function removeCustomProject(id) {
+export async function removeCustomProject(id) {
   hydrateProjectsStore()
-  customProjects.value = customProjects.value.filter((project) => project.id !== id)
-  persistCustomProjects()
+
+  const firebaseConfig = getFirebaseProjectStoreConfig()
+
+  if (firebaseConfig) {
+    projectStoragePending.value = true
+
+    try {
+      await deleteProjectFromFirebase(id, firebaseConfig)
+      projectStorageError.value = ''
+    }
+    catch (error) {
+      projectStoragePending.value = false
+      throw new Error(buildFirebaseErrorMessage(error))
+    }
+  }
+  else {
+    customProjects.value = customProjects.value.filter((project) => project.id !== id)
+    persistCustomProjects()
+  }
 }
 
 export function exportCustomProjects() {
@@ -244,7 +526,7 @@ export function exportCustomProjects() {
   return JSON.stringify(customProjects.value, null, 2)
 }
 
-export function importCustomProjects(jsonValue) {
+export async function importCustomProjects(jsonValue) {
   hydrateProjectsStore()
 
   let parsed = null
@@ -260,10 +542,27 @@ export function importCustomProjects(jsonValue) {
     throw new Error('Le fichier importe doit contenir un tableau de projets.')
   }
 
-  customProjects.value = normalizeProjectCollection(parsed)
-  persistCustomProjects()
+  const normalizedProjects = normalizeProjectCollection(parsed)
+  const firebaseConfig = getFirebaseProjectStoreConfig()
 
-  return customProjects.value
+  if (firebaseConfig) {
+    projectStoragePending.value = true
+
+    try {
+      await replaceProjectsInFirebase(normalizedProjects, firebaseConfig)
+      projectStorageError.value = ''
+    }
+    catch (error) {
+      projectStoragePending.value = false
+      throw new Error(buildFirebaseErrorMessage(error))
+    }
+  }
+  else {
+    customProjects.value = normalizedProjects
+    persistCustomProjects()
+  }
+
+  return normalizedProjects
 }
 
 export function useProjects() {
@@ -272,6 +571,9 @@ export function useProjects() {
   return {
     projects,
     customProjects: readonly(customProjects),
+    projectStorageMode: readonly(projectStorageMode),
+    projectStorageError: readonly(projectStorageError),
+    projectStoragePending: readonly(projectStoragePending),
     addCustomProject,
     updateCustomProject,
     removeCustomProject,
