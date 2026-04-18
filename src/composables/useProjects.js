@@ -40,6 +40,11 @@ const FIRESTORE_IMAGE_CHUNKS_SUBCOLLECTION = 'imageChunks'
 const REALTIME_DATABASE_IMAGE_REFERENCE_PREFIX = 'rtdb-image-ref-'
 const FIRESTORE_IMAGE_REFERENCE_PREFIX = 'firestore-image-ref-'
 const LEGACY_FIRESTORE_IMAGE_REFERENCE_PREFIX = 'firestore-image://'
+const REALTIME_DATABASE_IMAGE_ENABLE_OVERRIDE_KEY = 'foolio.enable-rtdb-images'
+const STORAGE_BUCKETS_KNOWN_AS_MISSING = new Set([
+  'compta-b4e23.firebasestorage.app',
+  'compta-b4e23.appspot.com',
+])
 const MAX_FIRESTORE_IMAGE_CHUNK_LENGTH = 240000
 const MAX_FIRESTORE_BATCH_OPERATIONS = 450
 const customProjects = ref([])
@@ -326,6 +331,10 @@ function buildRealtimeDatabaseProjectImagesPath(projectId) {
   return `${REALTIME_DATABASE_IMAGE_ROOT}/${projectId}`
 }
 
+function buildRealtimeDatabaseProjectImagePath(projectId, imageId) {
+  return `${buildRealtimeDatabaseProjectImagesPath(projectId)}/${imageId}`
+}
+
 function buildFirestoreImageReference(index) {
   return `${FIRESTORE_IMAGE_REFERENCE_PREFIX}${String(index).padStart(2, '0')}`
 }
@@ -435,8 +444,28 @@ function getPersistedProjectImageBackend(project = null) {
   return 'storage'
 }
 
+async function ensureRealtimeDatabaseWriteAvailability(config) {
+  if (!cleanText(config?.databaseURL)) {
+    return false
+  }
+
+  if (
+    typeof window !== 'undefined'
+    && window.localStorage.getItem(REALTIME_DATABASE_IMAGE_ENABLE_OVERRIDE_KEY) === '1'
+  ) {
+    return true
+  }
+
+  return !(
+    cleanText(config.projectId) === 'compta-b4e23'
+    && cleanText(config.databaseURL) === 'https://compta-b4e23-default-rtdb.europe-west1.firebasedatabase.app'
+  )
+}
+
 async function ensureFirebaseStorageAvailability(config) {
-  if (!cleanText(config.storageBucket)) {
+  const storageBucket = cleanText(config.storageBucket)
+
+  if (!storageBucket || STORAGE_BUCKETS_KNOWN_AS_MISSING.has(storageBucket)) {
     return false
   }
 
@@ -455,13 +484,7 @@ async function ensureFirebaseStorageAvailability(config) {
   firebaseStorageAvailability.set(signature, availabilityPromise)
 
   try {
-    const isAvailable = await availabilityPromise
-
-    if (!isAvailable) {
-      firebaseStorageAvailability.delete(signature)
-    }
-
-    return isAvailable
+    return await availabilityPromise
   }
   catch {
     firebaseStorageAvailability.delete(signature)
@@ -479,18 +502,35 @@ async function replaceProjectImagesInRealtimeDatabase(project, config) {
   }
 
   const { realtimeDb } = getFirebaseConnection(config)
-  const imageEntries = {}
+  const projectImagesPath = buildRealtimeDatabaseProjectImagesPath(project.id)
+  const projectImagesRef = databaseRef(realtimeDb, projectImagesPath)
+  const existingSnapshot = await get(projectImagesRef)
+  const existingImageIds = existingSnapshot.exists()
+    ? Object.keys(existingSnapshot.val() || {})
+    : []
+  const nextImageIds = new Set()
 
-  localImages.forEach(({ image, index }) => {
-    imageEntries[buildRealtimeDatabaseImageReference(index)] = {
-      order: index,
-      value: image,
-    }
-  })
+  await Promise.all(
+    localImages.map(({ image, index }) => {
+      const imageId = buildRealtimeDatabaseImageReference(index)
+      nextImageIds.add(imageId)
 
-  await setDatabaseValue(
-    databaseRef(realtimeDb, buildRealtimeDatabaseProjectImagesPath(project.id)),
-    imageEntries,
+      return setDatabaseValue(
+        databaseRef(realtimeDb, buildRealtimeDatabaseProjectImagePath(project.id, imageId)),
+        {
+          order: index,
+          value: image,
+        },
+      )
+    }),
+  )
+
+  await Promise.all(
+    existingImageIds
+      .filter((imageId) => !nextImageIds.has(imageId))
+      .map((imageId) => removeDatabaseValue(
+        databaseRef(realtimeDb, buildRealtimeDatabaseProjectImagePath(project.id, imageId)),
+      )),
   )
 
   return createRealtimeDatabaseProjectPayload(
@@ -534,9 +574,17 @@ async function readProjectImagesFromRealtimeDatabase(project, config) {
 
 async function deleteProjectImagesFromRealtimeDatabase(projectId, config) {
   const { realtimeDb } = getFirebaseConnection(config)
+  const projectImagesPath = buildRealtimeDatabaseProjectImagesPath(projectId)
+  const snapshot = await get(databaseRef(realtimeDb, projectImagesPath))
 
-  await removeDatabaseValue(
-    databaseRef(realtimeDb, buildRealtimeDatabaseProjectImagesPath(projectId)),
+  if (!snapshot.exists()) {
+    return
+  }
+
+  await Promise.all(
+    Object.keys(snapshot.val() || {}).map((imageId) => removeDatabaseValue(
+      databaseRef(realtimeDb, buildRealtimeDatabaseProjectImagePath(projectId, imageId)),
+    )),
   )
 }
 
@@ -584,18 +632,22 @@ async function uploadProjectImagesToFirebaseStorage(project, config) {
 }
 
 async function persistProjectMediaToFirebase(project, config) {
-  try {
-    const realtimeDatabasePayload = await replaceProjectImagesInRealtimeDatabase(project, config)
+  const realtimeDatabaseIsAvailable = await ensureRealtimeDatabaseWriteAvailability(config)
 
-    if (realtimeDatabasePayload) {
-      return {
-        backend: 'realtime-db',
-        project,
-        payload: realtimeDatabasePayload,
+  if (realtimeDatabaseIsAvailable) {
+    try {
+      const realtimeDatabasePayload = await replaceProjectImagesInRealtimeDatabase(project, config)
+
+      if (realtimeDatabasePayload) {
+        return {
+          backend: 'realtime-db',
+          project,
+          payload: realtimeDatabasePayload,
+        }
       }
     }
-  }
-  catch {
+    catch {
+    }
   }
 
   const storageReadyProject = await uploadProjectImagesToFirebaseStorage(project, config)

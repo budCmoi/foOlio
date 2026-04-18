@@ -45,14 +45,21 @@ onMounted(() => {
       scrollTrigger: createRevealTrigger('.project-summary'),
     })
 
-    gsap.from('.related-projects .section-heading, .related-projects .projects-grid > *', {
-      y: 44,
-      autoAlpha: 0,
-      stagger: 0.08,
-      duration: 0.78,
-      ease: 'power3.out',
-      scrollTrigger: createRevealTrigger('.related-projects'),
-    })
+    const relatedSection = root.value?.querySelector('.related-projects')
+    const relatedTargets = relatedSection
+      ? gsap.utils.toArray('.section-heading, .projects-grid > *', relatedSection)
+      : []
+
+    if (relatedSection && relatedTargets.length) {
+      gsap.from(relatedTargets, {
+        y: 44,
+        autoAlpha: 0,
+        stagger: 0.08,
+        duration: 0.78,
+        ease: 'power3.out',
+        scrollTrigger: createRevealTrigger(relatedSection),
+      })
+    }
   })
 })
 

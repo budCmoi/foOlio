@@ -110,11 +110,11 @@ const storageStatusMessage = computed(() => {
   }
 
   if (projectStoragePending.value) {
-    return 'Synchronisation Firebase en cours. Realtime Database est prioritaire pour les images, puis Storage, puis Firestore si besoin.'
+    return 'Synchronisation Firebase en cours. Les images utilisent le premier backend disponible entre Realtime Database, Storage et Firestore.'
   }
 
   if (projectStorageMode.value === 'firebase') {
-    return 'Synchronisation Firebase active. Les images passent d abord par Realtime Database, puis Storage, puis Firestore si un backend manque.'
+    return 'Synchronisation Firebase active. Les images utilisent le premier backend disponible entre Realtime Database, Storage et Firestore.'
   }
 
   return 'Mode local actif. Les projets restent sauvegardés dans ce navigateur.'
@@ -482,7 +482,7 @@ async function handleImport(event) {
           <div class="studio-panel__heading studio-panel__heading--nested">
             <div>
               <h3>Images du projet</h3>
-              <p>Ajoute autant d'images que tu veux. Quand Firebase est actif, chaque image essaie d etre stockee dans Realtime Database. Si elle refuse, le systeme essaie ensuite Storage puis Firestore.</p>
+              <p>Ajoute autant d'images que tu veux. Quand Firebase est actif, chaque image utilise automatiquement le premier backend disponible entre Realtime Database, Storage et Firestore.</p>
             </div>
           </div>
 
