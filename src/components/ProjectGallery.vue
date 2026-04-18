@@ -80,7 +80,8 @@ onMounted(() => {
 <template>
   <section ref="root" class="project-gallery page-block">
     <figure v-for="(image, index) in props.images" :key="`${image}-${index}`" :ref="setCardRef" class="project-gallery__item">
-      <div class="project-gallery__frame" :style="buildFrameStyle(image)">
+      <div class="project-gallery__frame">
+        <div class="project-gallery__surface" :style="buildFrameStyle(image)"></div>
         <img
           :ref="setImageRef"
           class="project-gallery__image"

@@ -1626,12 +1626,19 @@ figure {
 
 .project-gallery__frame {
   position: relative;
-  display: grid;
-  place-items: center;
+  overflow: visible;
+  box-sizing: border-box;
+  --project-gallery-overhang: 10px;
+  --project-gallery-inset: clamp(0.8rem, 1.4vw, 1.15rem);
+  height: clamp(18rem, 46vw, 30rem);
+  padding: 0 var(--project-gallery-overhang) var(--project-gallery-overhang) 0;
+}
+
+.project-gallery__surface {
+  position: absolute;
+  inset: 0 var(--project-gallery-overhang) var(--project-gallery-overhang) 0;
   overflow: hidden;
   isolation: isolate;
-  height: clamp(18rem, 46vw, 30rem);
-  padding: clamp(0.8rem, 1.4vw, 1.15rem);
   border-radius: calc(var(--radius-lg) + 0.3rem);
   background:
     radial-gradient(circle at 20% 18%, rgba(247, 242, 233, 0.16), transparent 34%),
@@ -1640,7 +1647,7 @@ figure {
   box-shadow: var(--shadow);
 }
 
-.project-gallery__frame::before {
+.project-gallery__surface::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -1654,7 +1661,7 @@ figure {
   opacity: 0.78;
 }
 
-.project-gallery__frame::after {
+.project-gallery__surface::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -1665,12 +1672,15 @@ figure {
 }
 
 .project-gallery__image {
-  position: relative;
+  position: absolute;
+  right: 0;
+  bottom: 0;
   z-index: 2;
-  width: 100%;
-  height: 100%;
+  width: calc(100% - var(--project-gallery-inset));
+  height: calc(100% - var(--project-gallery-inset));
+  display: block;
   object-fit: contain;
-  object-position: center;
+  object-position: right bottom;
   border-radius: calc(var(--radius-lg) - 0.28rem);
   will-change: transform;
 }
