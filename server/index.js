@@ -21,6 +21,28 @@ const distDirectory = path.join(rootDirectory, 'dist')
 const indexFilePath = path.join(distDirectory, 'index.html')
 const port = Number.parseInt(process.env.PORT || '3001', 10)
 const reservedProjectIds = baseProjects.map((project) => project.id)
+const developmentOrigins = new Set([
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+])
+
+app.use((request, response, next) => {
+  const origin = request.headers.origin
+
+  if (origin && developmentOrigins.has(origin)) {
+    response.header('Access-Control-Allow-Origin', origin)
+    response.header('Vary', 'Origin')
+    response.header('Access-Control-Allow-Headers', 'Content-Type')
+    response.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+  }
+
+  if (request.method === 'OPTIONS') {
+    response.status(204).end()
+    return
+  }
+
+  next()
+})
 
 app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ extended: true, limit: '50mb' }))

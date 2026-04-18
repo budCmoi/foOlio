@@ -27,20 +27,78 @@ function buildApiErrorMessage(error, fallbackMessage = 'Prisma indisponible. Ver
   return message || fallbackMessage
 }
 
+function buildApiResponseErrorMessage(response, payload) {
+  const payloadMessage = cleanText(payload?.error)
+
+  if (payloadMessage) {
+    return payloadMessage
+  }
+
+  if ([502, 503, 504].includes(response.status)) {
+    return 'Impossible de joindre l API Prisma. Verifie que le serveur Node tourne bien sur le port 3001.'
+  }
+
+  if (response.status >= 500) {
+    return 'L API Prisma a renvoye une erreur serveur.'
+  }
+
+  return 'La requete Prisma a echoue.'
+}
+
+function extractProjectPayload(payload) {
+  if (!payload?.project) {
+    throw new Error('Reponse Prisma invalide. Le serveur n a pas renvoye de projet.')
+  }
+
+  return normalizeProject(payload.project, payload.project)
+}
+
+function extractProjectsPayload(payload) {
+  if (Array.isArray(payload?.projects)) {
+    return payload.projects
+  }
+
+  if (Array.isArray(payload)) {
+    return payload
+  }
+
+  throw new Error('Reponse Prisma invalide. Le serveur n a pas renvoye la liste des projets.')
+}
+
+function resolveProjectsApiUrl(path) {
+  if (typeof window === 'undefined' || !import.meta.env.DEV || !path.startsWith('/')) {
+    return path
+  }
+
+  return `${window.location.protocol}//${window.location.hostname}:3001${path}`
+}
+
 async function requestProjectsApi(path, { method = 'GET', body } = {}) {
-  const response = await fetch(path, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  })
+  let response = null
+
+  try {
+    response = await fetch(resolveProjectsApiUrl(path), {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    })
+  }
+  catch {
+    throw new Error('Impossible de joindre l API Prisma. Verifie que le serveur Node tourne bien sur le port 3001.')
+  }
 
   const contentType = response.headers.get('content-type') || ''
   let payload = null
 
   if (contentType.includes('application/json')) {
-    payload = await response.json()
+    try {
+      payload = await response.json()
+    }
+    catch {
+      throw new Error('Reponse Prisma invalide. Le JSON renvoye par le serveur est illisible.')
+    }
   }
   else {
     const text = await response.text()
@@ -48,7 +106,7 @@ async function requestProjectsApi(path, { method = 'GET', body } = {}) {
   }
 
   if (!response.ok) {
-    throw new Error(cleanText(payload?.error) || 'La requete Prisma a echoue.')
+    throw new Error(buildApiResponseErrorMessage(response, payload))
   }
 
   return payload
@@ -84,7 +142,7 @@ async function loadProjectsFromApi({ force = false } = {}) {
   hydratePromise = requestProjectsApi('/api/projects')
     .then((payload) => {
       projectStorageError.value = ''
-      return replaceProjectsInStore(payload?.projects || [])
+      return replaceProjectsInStore(extractProjectsPayload(payload))
     })
     .catch((error) => {
       projectsHydrated.value = true
@@ -145,7 +203,7 @@ export async function addCustomProject(input) {
     })
 
     projectStorageError.value = ''
-    return upsertProjectInStore(normalizeProject(payload.project, payload.project))
+    return upsertProjectInStore(extractProjectPayload(payload))
   }
   finally {
     projectStoragePending.value = false
@@ -187,7 +245,7 @@ export async function updateCustomProject(originalId, input) {
     })
 
     projectStorageError.value = ''
-    return upsertProjectInStore(normalizeProject(payload.project, payload.project), originalId)
+    return upsertProjectInStore(extractProjectPayload(payload), originalId)
   }
   finally {
     projectStoragePending.value = false
@@ -248,7 +306,7 @@ export async function importCustomProjects(jsonValue) {
     })
 
     projectStorageError.value = ''
-    return replaceProjectsInStore(payload?.projects || normalizedProjects)
+    return replaceProjectsInStore(extractProjectsPayload(payload))
   }
   finally {
     projectStoragePending.value = false
