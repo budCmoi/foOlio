@@ -51,7 +51,7 @@ onMounted(() => {
       }
 
       gsap.to(imageNodes.value[index], {
-        yPercent: -10,
+        yPercent: -4,
         ease: 'none',
         scrollTrigger: {
           trigger: card,

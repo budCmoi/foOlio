@@ -16,6 +16,10 @@
   --shadow: 0px 26px 80px rgba(0, 0, 0, 0.34);
   --radius: 1.5rem;
   --radius-lg: 2.4rem;
+  --image-padding: 2px;
+  --image-radius: 1.05rem;
+  --image-surface: linear-gradient(135deg, rgba(246, 241, 232, 0.12), rgba(143, 214, 255, 0.08) 48%, rgba(13, 16, 23, 0.22));
+  --image-inner-border: rgba(246, 241, 232, 0.08);
   --mobile-gutter: clamp(1rem, 4vw, 1.15rem);
   --content-max: min(1320px, calc(100vw - clamp(1.2rem, 4vw, 3rem) * 2));
 }
@@ -55,6 +59,12 @@ body {
 img {
   display: block;
   max-width: 100%;
+  padding: var(--image-padding);
+  border-radius: var(--image-radius);
+  object-fit: contain;
+  object-position: center;
+  background: var(--image-surface);
+  box-shadow: inset 0 0 0 1px var(--image-inner-border);
 }
 
 a {
@@ -457,7 +467,8 @@ figure {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  border-radius: inherit;
+  object-fit: contain;
 }
 
 .projects-section__spotlight-year {
@@ -1364,7 +1375,8 @@ figure {
 .project-card__media img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  border-radius: inherit;
+  object-fit: contain;
   will-change: transform;
 }
 
@@ -1634,8 +1646,9 @@ figure {
 
 .project-gallery__frame img {
   width: 100%;
-  min-height: 30rem;
-  object-fit: cover;
+  height: clamp(18rem, 46vw, 30rem);
+  border-radius: inherit;
+  object-fit: contain;
 }
 
 .related-projects {
@@ -1965,7 +1978,9 @@ figure {
   width: 100%;
   height: 100%;
   min-height: 8rem;
-  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  border-radius: inherit;
+  object-fit: contain;
 }
 
 .studio-image-card__body,
@@ -2372,7 +2387,7 @@ figure {
   }
 
   .project-gallery__frame img {
-    min-height: 18rem;
+    height: 18rem;
   }
 
   .custom-cursor {
