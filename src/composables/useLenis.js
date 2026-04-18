@@ -6,7 +6,7 @@ const lenis = shallowRef(null)
 let tickerCallback = null
 const defaultScrollToDuration = 2.8
 const defaultLenisOptions = {
-  duration: 5.6,
+  duration: 1.55,
   smoothWheel: true,
   smoothTouch: true,
   syncTouch: true,
