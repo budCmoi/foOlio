@@ -125,16 +125,47 @@ figure {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.84;
+  opacity: 0.9;
   mix-blend-mode: screen;
-  mask-image: radial-gradient(circle at 50% 42%, black 22%, transparent 76%);
+  mask-image: radial-gradient(ellipse at 50% 46%, black 24%, rgba(0, 0, 0, 0.88) 58%, transparent 92%);
+}
+
+.scene-background::before,
+.scene-background::after {
+  content: '';
+  position: absolute;
+  inset: -12%;
+  pointer-events: none;
+}
+
+.scene-background::before {
+  z-index: 0;
+  opacity: 0.62;
+  background:
+    conic-gradient(from 0deg at 50% 46%, rgba(143, 214, 255, 0.12), transparent 18%, rgba(255, 185, 152, 0.08) 34%, transparent 52%, rgba(215, 255, 118, 0.08) 71%, transparent 100%),
+    radial-gradient(circle at 50% 46%, rgba(255, 255, 255, 0.06), transparent 16%);
+  filter: blur(44px);
+  animation: galactic-spin 34s linear infinite;
+}
+
+.scene-background::after {
+  z-index: 2;
+  opacity: 0.46;
+  background:
+    radial-gradient(circle at 48% 46%, rgba(143, 214, 255, 0.16), transparent 16%),
+    radial-gradient(circle at 24% 70%, rgba(255, 185, 152, 0.14), transparent 18%),
+    radial-gradient(circle at 80% 18%, rgba(215, 255, 118, 0.12), transparent 14%);
+  filter: blur(36px);
+  animation: galactic-breathe 9s ease-in-out infinite alternate;
 }
 
 .scene-background canvas {
+  position: relative;
+  z-index: 1;
   width: 100% !important;
   height: 100% !important;
   display: block;
-  filter: blur(0.25px);
+  filter: blur(0.35px) saturate(1.08);
 }
 
 .app-shell__backdrop {
@@ -143,22 +174,84 @@ figure {
   pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(circle at 15% 18%, rgba(255, 185, 152, 0.12), transparent 30%),
-    radial-gradient(circle at 82% 12%, rgba(143, 214, 255, 0.14), transparent 26%),
-    radial-gradient(circle at 54% 62%, rgba(215, 255, 118, 0.1), transparent 28%),
+    radial-gradient(circle at 50% 44%, rgba(143, 214, 255, 0.16), transparent 20%),
+    radial-gradient(circle at 22% 70%, rgba(255, 185, 152, 0.12), transparent 24%),
+    radial-gradient(circle at 78% 18%, rgba(215, 255, 118, 0.08), transparent 20%),
     linear-gradient(180deg, #171b26 0%, #0d1017 52%, #0a0c13 100%);
+}
+
+.app-shell__backdrop::before {
+  content: '';
+  position: absolute;
+  inset: -12%;
+  opacity: 0.46;
+  background:
+    radial-gradient(circle at 46% 44%, rgba(143, 214, 255, 0.18), transparent 18%),
+    radial-gradient(circle at 58% 51%, rgba(255, 255, 255, 0.05), transparent 12%),
+    radial-gradient(circle at 23% 69%, rgba(255, 185, 152, 0.14), transparent 16%),
+    radial-gradient(circle at 76% 19%, rgba(215, 255, 118, 0.12), transparent 12%);
+  filter: blur(52px);
+  animation: galactic-drift 22s ease-in-out infinite alternate, galactic-breathe 14s ease-in-out infinite alternate;
 }
 
 .app-shell__backdrop::after {
   content: '';
   position: absolute;
   inset: 0;
-  opacity: 0.35;
+  opacity: 0.42;
   background-image:
-    linear-gradient(rgba(247, 242, 233, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(247, 242, 233, 0.03) 1px, transparent 1px);
-  background-size: 120px 120px;
-  mask-image: radial-gradient(circle at center, black 38%, transparent 88%);
+    radial-gradient(circle, rgba(247, 242, 233, 0.18) 0 0.8px, transparent 1px),
+    radial-gradient(circle, rgba(143, 214, 255, 0.16) 0 1px, transparent 1.25px);
+  background-size: 132px 132px, 188px 188px;
+  background-position: 0 0, 34px 56px;
+  mask-image: radial-gradient(circle at center, black 42%, transparent 90%);
+  animation: starfield-pan 44s linear infinite;
+}
+
+@keyframes galactic-drift {
+  0% {
+    transform: translate3d(-2%, -1%, 0) scale(1);
+  }
+
+  100% {
+    transform: translate3d(2%, 1.5%, 0) scale(1.06);
+  }
+}
+
+@keyframes galactic-spin {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  100% {
+    transform: rotate(360deg) scale(1.08);
+  }
+}
+
+@keyframes galactic-breathe {
+  0% {
+    opacity: 0.34;
+    transform: scale(0.98);
+  }
+
+  100% {
+    opacity: 0.62;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes starfield-pan {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(-2.5%, 1.5%, 0);
+  }
+
+  100% {
+    transform: translate3d(-5%, 3%, 0);
+  }
 }
 
 .route-transition {
@@ -306,6 +399,10 @@ figure {
   align-items: stretch;
 }
 
+.projects-section__heading--solo {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .projects-section__intro {
   display: grid;
   align-content: start;
@@ -416,6 +513,53 @@ figure {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.projects-section__empty {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1.3rem, 3vw, 2rem);
+  border: 1px solid var(--border);
+  border-radius: 1.9rem;
+  background:
+    radial-gradient(circle at 85% 18%, rgba(215, 255, 118, 0.1), transparent 18%),
+    radial-gradient(circle at 14% 22%, rgba(143, 214, 255, 0.14), transparent 18%),
+    linear-gradient(180deg, rgba(20, 23, 34, 0.92), rgba(9, 11, 17, 0.88));
+  box-shadow: var(--shadow);
+}
+
+.projects-section__empty-label {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 2rem;
+  padding: 0.42rem 0.78rem;
+  border: 1px solid rgba(247, 242, 233, 0.12);
+  border-radius: 999px;
+  background: rgba(247, 242, 233, 0.04);
+  color: var(--text-soft);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.projects-section__empty h3 {
+  max-width: 16ch;
+  font-size: clamp(2rem, 3vw, 3.3rem);
+  line-height: 0.95;
+}
+
+.projects-section__empty p {
+  max-width: 44rem;
+  color: var(--text-soft);
+  line-height: 1.75;
+}
+
+.projects-section__empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
 }
 
 .magnetic-link {
@@ -981,12 +1125,17 @@ figure {
   position: relative;
   z-index: 1;
   display: grid;
-  gap: 0.65rem;
-  padding: 1.35rem;
+  gap: 0.5rem;
+  padding: 1.1rem 1.15rem;
   border: 1px solid var(--border);
-  border-radius: 1.5rem;
+  border-radius: 1.35rem;
   background: var(--surface);
   backdrop-filter: blur(16px);
+}
+
+.hero-card span {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
 }
 
 .hero-card span,
@@ -1011,12 +1160,13 @@ figure {
 }
 
 .hero-card strong {
-  font-size: 1.45rem;
+  font-size: 1.3rem;
 }
 
 .hero-card p {
+  font-size: 0.94rem;
   color: var(--text-soft);
-  line-height: 1.65;
+  line-height: 1.55;
 }
 
 .hero-card--primary {
@@ -1667,7 +1817,8 @@ figure {
 .studio-field input,
 .studio-field textarea,
 .studio-images__url,
-.studio-color-field input[type='text'] {
+.studio-color-field input[type='text'],
+.studio-project-search__input {
   width: 100%;
   padding: 0.72rem 0.82rem;
   font-size: 0.86rem;
@@ -1691,7 +1842,8 @@ figure {
 .studio-field input:focus,
 .studio-field textarea:focus,
 .studio-images__url:focus,
-.studio-color-field input[type='text']:focus {
+.studio-color-field input[type='text']:focus,
+.studio-project-search__input:focus {
   outline: none;
   border-color: rgba(215, 255, 118, 0.22);
   border-bottom-color: var(--accent);
@@ -1773,6 +1925,21 @@ figure {
   gap: 1rem;
 }
 
+.studio-project-search {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.studio-project-search__input {
+  flex: 1 1 auto;
+}
+
+.studio-project-search .button {
+  min-height: 2.7rem;
+  white-space: nowrap;
+}
+
 .studio-image-card,
 .studio-project-item {
   display: grid;
@@ -1805,6 +1972,25 @@ figure {
 .studio-project-item__copy {
   display: grid;
   gap: 0.45rem;
+}
+
+.studio-project-item.is-editing {
+  border-color: rgba(215, 255, 118, 0.28);
+  background: rgba(215, 255, 118, 0.08);
+  box-shadow: 0 1.25rem 2.5rem rgba(7, 8, 14, 0.22);
+}
+
+.studio-project-item__state {
+  width: fit-content;
+  padding: 0.32rem 0.58rem;
+  border: 1px solid rgba(215, 255, 118, 0.24);
+  border-radius: 999px;
+  background: rgba(215, 255, 118, 0.14);
+  color: var(--text);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .studio-project-item__actions {
@@ -1922,6 +2108,10 @@ figure {
   .studio-panel--sidebar .studio-project-list {
     overflow: visible;
     padding-right: 0;
+  }
+
+  .studio-project-search {
+    flex-wrap: wrap;
   }
 }
 
@@ -2075,7 +2265,17 @@ figure {
   }
 
   .hero-card {
-    padding: 1.15rem;
+    gap: 0.45rem;
+    padding: 0.98rem 1rem;
+  }
+
+  .hero-card strong {
+    font-size: clamp(1.04rem, 4.8vw, 1.34rem);
+  }
+
+  .hero-card p {
+    font-size: 0.84rem;
+    line-height: 1.5;
   }
 
   .hero-card,
@@ -2360,6 +2560,10 @@ figure {
     font-size: 1rem;
   }
 
+  .hero-card strong {
+    font-size: 0.92rem;
+  }
+
   .section-heading p,
   .manifest__copy p:last-child,
   .hero__lead,
@@ -2373,6 +2577,16 @@ figure {
   .fullscreen-menu__meta a {
     font-size: 0.82rem;
     line-height: 1.55;
+  }
+
+  .hero-card {
+    gap: 0.42rem;
+    padding: 0.92rem 0.95rem;
+  }
+
+  .hero-card p {
+    font-size: 0.76rem;
+    line-height: 1.45;
   }
 
   .project-card__meta,

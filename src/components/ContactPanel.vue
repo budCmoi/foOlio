@@ -37,11 +37,11 @@ onBeforeUnmount(() => {
     <div class="contact-panel__surface">
       <p class="section-tag contact-panel__status" data-contact-item>
         <span class="contact-panel__status-dot" aria-hidden="true"></span>
-        Disponible pour des produits web et workflows IA
+        Disponible pour solutions web, mobiles, jeu vidéo et IA
       </p>
-      <h2 ref="title" class="contact-panel__title">Parlons produit, frontend, full-stack et automatisation IA.</h2>
+      <h2 ref="title" class="contact-panel__title">Parlons de la solution à construire.</h2>
       <p class="contact-panel__copy" data-contact-item>
-        Si tu veux un site qui ressemble à un produit, une app métier plus propre, un studio interne connecté à Firebase ou une couche IA bien cadrée, on peut le construire sérieusement.
+        Site, app mobile, jeu, outil interne ou plateforme complète : je peux construire une solution sérieuse avec l'IA intégrée à l'expérience, aux workflows et à la production.
       </p>
       <div class="contact-panel__actions" data-contact-item>
         <MagneticLink class="button button--primary button--light" :href="`mailto:${siteProfile.email}`" cursor="Mail">

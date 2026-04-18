@@ -59,9 +59,50 @@ const editingProjectId = ref('')
 const feedback = ref({ type: '', text: '' })
 const generationSource = ref('')
 const isGeneratingDraft = ref(false)
+const projectSearchQuery = ref('')
 
 const isEditing = computed(() => Boolean(editingProjectId.value))
 const suggestedSlug = computed(() => createProjectSlug(form.value.id || form.value.title))
+const normalizedProjectSearchQuery = computed(() => projectSearchQuery.value.trim().toLowerCase())
+const filteredProjects = computed(() => {
+  const query = normalizedProjectSearchQuery.value
+
+  if (!query) {
+    return customProjects.value
+  }
+
+  return customProjects.value.filter((project) => {
+    const haystack = [
+      project.title,
+      project.id,
+      project.year,
+      project.role,
+      project.description,
+      project.statement,
+      project.link,
+      ...project.tech,
+      ...project.results,
+    ]
+      .join(' ')
+      .toLowerCase()
+
+    return haystack.includes(query)
+  })
+})
+const projectSearchSummary = computed(() => {
+  const totalProjects = customProjects.value.length
+  const visibleProjects = filteredProjects.value.length
+
+  if (!totalProjects) {
+    return 'Aucun projet personnalise pour l’instant.'
+  }
+
+  if (!normalizedProjectSearchQuery.value) {
+    return `${totalProjects} projet(s) personnalise(s) disponible(s) dans le studio.`
+  }
+
+  return `${visibleProjects} resultat(s) sur ${totalProjects} projet(s).`
+})
 const storageStatusTone = computed(() => (projectStorageError.value ? 'is-error' : 'is-success'))
 const storageStatusMessage = computed(() => {
   if (projectStorageError.value) {
@@ -491,13 +532,39 @@ async function handleImport(event) {
 
       <aside class="studio-panel studio-panel--sidebar" data-page-intro>
         <div class="studio-panel__heading">
-          <h2>Projets personnalisés</h2>
+          <div>
+            <h2>Choisir un projet existant</h2>
+            <p>{{ projectSearchSummary }}</p>
+          </div>
         </div>
 
-        <div v-if="customProjects.length" class="studio-project-list">
-          <article v-for="project in customProjects" :key="project.id" class="studio-project-item">
+        <div v-if="customProjects.length" class="studio-project-search">
+          <input
+            v-model="projectSearchQuery"
+            type="search"
+            class="studio-project-search__input"
+            placeholder="Rechercher par titre, slug, annee, role ou techno"
+          />
+          <button
+            v-if="projectSearchQuery"
+            class="button button--ghost"
+            type="button"
+            @click="projectSearchQuery = ''"
+          >
+            Effacer
+          </button>
+        </div>
+
+        <div v-if="filteredProjects.length" class="studio-project-list">
+          <article
+            v-for="project in filteredProjects"
+            :key="project.id"
+            class="studio-project-item"
+            :class="{ 'is-editing': editingProjectId === project.id }"
+          >
             <div class="studio-project-item__copy">
               <span>{{ project.year }} · {{ project.images.length }} image(s)</span>
+              <strong v-if="editingProjectId === project.id" class="studio-project-item__state">Edition en cours</strong>
               <h3>{{ project.title }}</h3>
               <p>{{ project.description }}</p>
               <small>/project/{{ project.id }}</small>
@@ -516,6 +583,10 @@ async function handleImport(event) {
             </div>
           </article>
         </div>
+
+        <p v-else-if="customProjects.length" class="studio-empty">
+          Aucun projet ne correspond a cette recherche. Essaie avec le titre, le slug, l annee, le role ou une techno.
+        </p>
 
         <p v-else class="studio-empty">
           Quand tu ajoutes ton premier projet ici, il apparaitra automatiquement sur la page d'accueil et dans son URL detail.

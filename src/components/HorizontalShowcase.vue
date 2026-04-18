@@ -9,21 +9,21 @@ const track = ref(null)
 const panels = [
   {
     index: '01',
-    title: 'Concevoir le frontend comme un produit',
-    description: 'Les composants, les états et les transitions doivent rester clairs sous charge réelle, pas seulement dans une maquette propre.',
-    tags: ['Composants robustes', 'États lisibles', 'UX de production'],
+    title: 'Cadrer le problème, clarifier la solution',
+    description: 'Je transforme un besoin flou en interface et en parcours clairs, pensés pour l\'usage réel et pas seulement pour une démo.',
+    tags: ['Cadrage', 'UX claire', 'Décision rapide'],
   },
   {
     index: '02',
-    title: 'Relier UI, logique et données',
-    description: 'Je préfère une app où le studio, le routing et la persistence avancent ensemble plutôt qu\'une interface belle mais fragile au premier changement.',
-    tags: ['Vue 3', 'Firebase', 'Architecture évolutive'],
+    title: 'Relier interface, logique et système',
+    description: 'Je préfère une solution où le studio, la donnée, les routes, l\'admin et la synchro avancent ensemble plutôt qu\'un assemblage fragile.',
+    tags: ['Stack complète', 'Firebase', 'Architecture évolutive'],
   },
   {
     index: '03',
-    title: 'Automatiser avec l\'IA quand ça vaut le coup',
-    description: 'Résumé, génération assistée, enrichissement ou outils internes : l\'IA entre dans le produit quand elle réduit du travail utile et reste maîtrisable.',
-    tags: ['Workflows IA', 'Assistant interne', 'Automatisation ciblée'],
+    title: 'Déployer l\'IA partout dans la chaîne',
+    description: 'Génération, recherche, automatisation, assistants, scoring, enrichissement et outils internes : l\'IA traverse toute la solution et accélère chaque couche.',
+    tags: ['Workflows IA', 'Assistants', 'Automatisation continue'],
   },
 ]
 
@@ -161,9 +161,9 @@ onBeforeUnmount(() => {
     <div class="section-heading">
       <p class="section-tag">Processus</p>
       <div>
-        <h2>Du code propre, une base solide et juste assez de mouvement pour donner du relief.</h2>
+        <h2>Des solutions propres, solides et assez vivantes pour marquer.</h2>
         <p>
-          Le but n\'est pas de mettre de l\'effet partout. Le but est de livrer un produit qui reste clair, rapide et extensible.
+          Le but n\'est pas de vendre un effet. Le but est de résoudre un besoin avec une base rapide, claire et extensible, IA incluse dès le départ.
         </p>
       </div>
     </div>

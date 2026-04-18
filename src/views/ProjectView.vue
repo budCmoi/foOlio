@@ -108,13 +108,13 @@ onBeforeUnmount(() => {
 
     <ProjectGallery :images="project.images" :title="project.title" />
 
-    <section class="related-projects page-block">
+    <section v-if="relatedProjects.length" class="related-projects page-block">
       <div class="section-heading">
         <p class="section-tag">Continuer l'exploration</p>
         <div>
-          <h2>D'autres études de cas chargées dynamiquement.</h2>
+          <h2>D'autres interventions construites sur la même base.</h2>
           <p>
-            La même structure pilotée par les données alimente chaque route projet et rend le portfolio facile à faire évoluer dans le temps.
+            La même structure pilotée par les données alimente chaque page et permet de publier de nouveaux cas sans refaire tout le site.
           </p>
         </div>
       </div>

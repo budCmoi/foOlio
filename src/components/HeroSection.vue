@@ -231,8 +231,8 @@ onBeforeUnmount(() => {
 
     <div class="hero__grid">
       <div class="hero__copy">
-        <p class="section-tag" data-hero-fade>AI dev / Full-stack / Vue</p>
-        <h1 ref="title" class="hero__title">Je construis des produits web rapides, lisibles et augmentés par l'IA quand elle est vraiment utile.</h1>
+        <p class="section-tag" data-hero-fade>Architectures / IA-native / Web, mobile, jeux</p>
+        <h1 ref="title" class="hero__title">Je conçois des systèmes digitaux ambitieux, du web au jeu vidéo, avec une IA native à chaque couche.</h1>
         <p class="hero__lead" data-hero-fade>
           {{ siteProfile.intro }}
         </p>
@@ -252,20 +252,20 @@ onBeforeUnmount(() => {
 
         <article class="hero-card hero-card--primary">
           <span>01</span>
-          <strong>Frontend précis</strong>
-          <p>Vue 3, composants solides, animations utiles et interfaces qui restent propres quand le produit grandit.</p>
+          <strong>Solutions lisibles</strong>
+          <p>Web, mobile ou jeu : j'organise l'interface pour résoudre un besoin clairement, sans bruit inutile.</p>
         </article>
 
         <article class="hero-card hero-card--accent">
           <span>02</span>
-          <strong>Full-stack pragmatique</strong>
-          <p>Routing, données, studio interne et persistence branchés ensemble sans transformer le code en usine.</p>
+          <strong>Systèmes complets</strong>
+          <p>Frontend, backend, données, outils internes et delivery sont pensés comme une seule solution solide.</p>
         </article>
 
         <article class="hero-card hero-card--ghost">
           <span>03</span>
-          <strong>IA branchée au bon endroit</strong>
-          <p>Génération assistée, enrichissement de contenu et automatisations utiles, avec un vrai cadre produit autour.</p>
+          <strong>IA partout dans la chaîne</strong>
+          <p>Conception, génération, recherche, automatisation, enrichissement et assistants : l'IA traverse tout le système.</p>
         </article>
       </div>
     </div>

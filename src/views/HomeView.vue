@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import ContactPanel from '@/components/ContactPanel.vue'
 import HeroSection from '@/components/HeroSection.vue'
 import HorizontalShowcase from '@/components/HorizontalShowcase.vue'
+import MagneticLink from '@/components/MagneticLink.vue'
 import ProjectCard from '@/components/ProjectCard.vue'
 import { createRevealTrigger, gsap, splitReveal, useGSAPContext } from '@/composables/useGSAP'
 import { useProjects } from '@/composables/useProjects'
@@ -12,23 +13,31 @@ const manifestTitle = ref(null)
 const { add } = useGSAPContext(root)
 const cleanups = []
 const { projects } = useProjects()
+const hasProjects = computed(() => projects.value.length > 0)
 const featuredProject = computed(() => projects.value[0] ?? null)
+const projectsSectionTag = computed(() => (hasProjects.value ? 'Cas réels' : 'Sélection confidentielle'))
+const projectsSectionTitle = computed(() => (hasProjects.value
+  ? 'Des solutions pilotées par la donnée, pensées pour évoluer sans friction.'
+  : 'Une sélection réelle, publiée seulement quand elle mérite de l’être.'))
+const projectsSectionLead = computed(() => (hasProjects.value
+  ? 'J\'aime les bases où contenu, studio interne, automatisation et IA sont prévus dès le départ, pas greffés plus tard à la va-vite.'
+  : 'Le site est prêt à publier chaque mission depuis le studio privé. En attendant, les références et démonstrations se partagent au bon moment, selon le contexte.'))
 
 const manifestCards = [
   {
     index: '01',
-    title: 'Frontend net, pensé pour durer',
-    text: 'Je construis des interfaces lisibles, rapides et maintenables, avec une attention forte aux états, aux transitions et à la qualité d\'intégration.',
+    title: 'Transformer un besoin en solution claire',
+    text: 'Je pars d\'un problème concret et je construis une réponse lisible, rapide et robuste côté interface comme côté usage.',
   },
   {
     index: '02',
-    title: 'Produit full-stack cohérent',
-    text: 'Le frontend, la donnée, les routes et l\'admin doivent évoluer ensemble. J\'aime les systèmes simples à relire, rapides à faire bouger et faciles à faire grandir.',
+    title: 'Assembler une stack qui tient',
+    text: 'Frontend, backend, routes, données, admin, synchro et déploiement avancent ensemble pour produire quelque chose de fiable.',
   },
   {
     index: '03',
-    title: 'IA utile, cadrée par le produit',
-    text: 'J\'ajoute de l\'automatisation, de la génération ou de l\'assistance IA quand cela réduit vraiment la friction côté équipe ou côté utilisateur.',
+    title: 'IA partout dans la chaîne',
+    text: 'Recherche, génération, automatisation, outils internes, contenu, QA et assistance : l\'IA fait partie de l\'architecture, pas d\'un module isolé.',
   },
 ]
 
@@ -57,7 +66,7 @@ onMounted(() => {
       scrollTrigger: createRevealTrigger('.manifest__grid'),
     })
 
-    gsap.from('.projects-section .section-heading, .projects-grid > *', {
+    gsap.from('.projects-section .section-heading, .projects-grid > *, .projects-section__empty', {
       y: 46,
       autoAlpha: 0,
       stagger: 0.09,
@@ -80,9 +89,9 @@ onBeforeUnmount(() => {
     <section class="manifest page-block" data-page-intro>
       <div class="manifest__copy">
         <p class="section-tag">Approche</p>
-        <h2 ref="manifestTitle">Je construis des produits web où l'interface, la donnée et l'IA travaillent comme un seul système.</h2>
+        <h2 ref="manifestTitle">Je transforme une ambition, un besoin métier ou une idée brute en solution nette, performante et prête à monter en charge.</h2>
         <p>
-          Mon terrain de jeu : apps Vue, interfaces d\'admin, expériences produit premium, synchro Firebase et automatisations IA qui servent le business au lieu d\'ajouter du bruit.
+          Direction produit, architecture, interface, data et orchestration IA : chaque couche est pensée ensemble pour éviter les rustines et garder une exécution haut de gamme.
         </p>
       </div>
 
@@ -98,13 +107,11 @@ onBeforeUnmount(() => {
     <HorizontalShowcase />
 
     <section id="projects" class="projects-section page-block" data-page-intro>
-      <div class="section-heading projects-section__heading">
+      <div class="section-heading projects-section__heading" :class="{ 'projects-section__heading--solo': !featuredProject }">
         <div class="projects-section__intro">
-          <p class="section-tag">Sélection</p>
-          <h2>Des produits pilotés par la donnée, conçus pour évoluer sans se casser.</h2>
-          <p>
-            J\'aime les bases qui restent propres quand le contenu change, qu\'un studio interne apparaît ou qu\'une couche IA doit se brancher plus tard sans tout réécrire.
-          </p>
+          <p class="section-tag">{{ projectsSectionTag }}</p>
+          <h2>{{ projectsSectionTitle }}</h2>
+          <p>{{ projectsSectionLead }}</p>
         </div>
 
         <article
@@ -123,7 +130,7 @@ onBeforeUnmount(() => {
           </div>
 
           <div class="projects-section__spotlight-copy">
-            <span class="projects-section__spotlight-label">Projet en focus</span>
+            <span class="projects-section__spotlight-label">Cas publié</span>
             <strong>{{ featuredProject.title }}</strong>
             <p>{{ featuredProject.statement }}</p>
 
@@ -134,7 +141,7 @@ onBeforeUnmount(() => {
         </article>
       </div>
 
-      <div class="projects-grid">
+      <div v-if="hasProjects" class="projects-grid">
         <ProjectCard
           v-for="(project, index) in projects"
           :key="project.id"
@@ -142,6 +149,22 @@ onBeforeUnmount(() => {
           :index="index"
         />
       </div>
+
+      <article v-else class="projects-section__empty">
+        <span class="projects-section__empty-label">Publication en cours</span>
+        <h3>La prochaine publication sera un cas réel.</h3>
+        <p>
+          Chaque intervention peut maintenant être mise en ligne proprement, sans contenu de remplissage, dès qu\'elle doit devenir publique.
+        </p>
+        <div class="projects-section__empty-actions">
+          <MagneticLink class="button button--primary" :to="{ path: '/', hash: '#contact' }" cursor="Contact">
+            Discuter de votre projet
+          </MagneticLink>
+          <MagneticLink class="button button--ghost" :to="{ path: '/', hash: '#process' }" cursor="Approche">
+            Voir l'approche
+          </MagneticLink>
+        </div>
+      </article>
     </section>
 
     <ContactPanel />
