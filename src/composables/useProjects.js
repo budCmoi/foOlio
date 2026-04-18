@@ -19,6 +19,7 @@ const projectStorageError = ref('')
 const projectStoragePending = ref(false)
 
 const reservedProjectIds = baseProjects.map((project) => project.id)
+const invalidProjectsListMessage = 'Reponse Prisma invalide. Le serveur n a pas renvoye la liste des projets.'
 
 let hydratePromise = null
 
@@ -62,7 +63,7 @@ function extractProjectsPayload(payload) {
     return payload
   }
 
-  throw new Error('Reponse Prisma invalide. Le serveur n a pas renvoye la liste des projets.')
+  throw new Error(invalidProjectsListMessage)
 }
 
 function resolveProjectsApiUrl(path) {
@@ -122,6 +123,21 @@ function replaceProjectsInStore(entries = []) {
   return customProjects.value
 }
 
+async function requestProjectsListFromApi() {
+  try {
+    const payload = await requestProjectsApi('/api/projects')
+    return extractProjectsPayload(payload)
+  }
+  catch (error) {
+    if (cleanText(error?.message) !== invalidProjectsListMessage) {
+      throw error
+    }
+
+    const retryPayload = await requestProjectsApi('/api/projects')
+    return extractProjectsPayload(retryPayload)
+  }
+}
+
 function upsertProjectInStore(project, originalId = '') {
   customProjects.value = sortProjects([
     ...customProjects.value.filter((entry) => entry.id !== originalId && entry.id !== project.id),
@@ -139,10 +155,10 @@ async function loadProjectsFromApi({ force = false } = {}) {
   projectStoragePending.value = true
   projectStorageMode.value = 'prisma'
 
-  hydratePromise = requestProjectsApi('/api/projects')
-    .then((payload) => {
+  hydratePromise = requestProjectsListFromApi()
+    .then((entries) => {
       projectStorageError.value = ''
-      return replaceProjectsInStore(extractProjectsPayload(payload))
+      return replaceProjectsInStore(entries)
     })
     .catch((error) => {
       projectsHydrated.value = true
@@ -170,7 +186,7 @@ export function hydrateProjectsStore() {
     return
   }
 
-  void loadProjectsFromApi()
+  void loadProjectsFromApi().catch(() => {})
 }
 
 export const projects = computed(() => {
