@@ -46,12 +46,25 @@ function buildApiResponseErrorMessage(response, payload) {
   return 'La requete Prisma a echoue.'
 }
 
+function looksLikeProjectPayload(payload) {
+  return Boolean(
+    payload
+    && typeof payload === 'object'
+    && cleanText(payload.id)
+    && cleanText(payload.title),
+  )
+}
+
 function extractProjectPayload(payload) {
-  if (!payload?.project) {
-    throw new Error('Reponse Prisma invalide. Le serveur n a pas renvoye de projet.')
+  if (payload?.project) {
+    return normalizeProject(payload.project, payload.project)
   }
 
-  return normalizeProject(payload.project, payload.project)
+  if (looksLikeProjectPayload(payload)) {
+    return normalizeProject(payload, payload)
+  }
+
+  throw new Error('Reponse Prisma invalide. Le serveur n a pas renvoye de projet.')
 }
 
 function extractProjectsPayload(payload) {
