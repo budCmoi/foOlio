@@ -10,7 +10,6 @@ import {
   normalizeProjectCollection,
   parseJsonList,
   sortProjects,
-  stringifyJsonList,
 } from '../src/lib/project-model.js'
 
 const prisma = new PrismaClient()
@@ -25,6 +24,17 @@ const developmentOrigins = new Set([
   'http://localhost:5173',
   'http://127.0.0.1:5173',
 ])
+const projectInclude = {
+  images: {
+    orderBy: { position: 'asc' },
+  },
+  techEntries: {
+    orderBy: { position: 'asc' },
+  },
+  resultEntries: {
+    orderBy: { position: 'asc' },
+  },
+}
 
 app.use((request, response, next) => {
   const origin = request.headers.origin
@@ -48,6 +58,16 @@ app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ extended: true, limit: '50mb' }))
 
 function toApiProject(record) {
+  const images = record.images?.length
+    ? record.images.map((image) => image.url)
+    : parseJsonList(record.imagesJson)
+  const tech = record.techEntries?.length
+    ? record.techEntries.map((entry) => entry.value)
+    : parseJsonList(record.techJson)
+  const results = record.resultEntries?.length
+    ? record.resultEntries.map((entry) => entry.value)
+    : parseJsonList(record.resultsJson)
+
   return normalizeProject(
     {
       id: record.id,
@@ -58,9 +78,9 @@ function toApiProject(record) {
       role: record.role,
       accent: record.accent,
       link: record.link || '',
-      images: parseJsonList(record.imagesJson),
-      tech: parseJsonList(record.techJson),
-      results: parseJsonList(record.resultsJson),
+      images,
+      tech,
+      results,
       createdAt: record.createdAt.toISOString(),
     },
     {
@@ -69,11 +89,17 @@ function toApiProject(record) {
   )
 }
 
-function toPrismaProjectData(project) {
+function toProjectRelationItems(values, valueKey) {
+  return values.map((value, index) => ({
+    [valueKey]: value,
+    position: index,
+  }))
+}
+
+function toPrismaProjectScalarData(project) {
   const createdAt = new Date(project.createdAt)
 
   return {
-    id: project.id,
     title: project.title,
     description: project.description,
     statement: project.statement,
@@ -81,10 +107,97 @@ function toPrismaProjectData(project) {
     role: project.role,
     accent: project.accent,
     link: cleanText(project.link) || null,
-    imagesJson: stringifyJsonList(project.images),
-    techJson: stringifyJsonList(project.tech),
-    resultsJson: stringifyJsonList(project.results),
+    imagesJson: null,
+    techJson: null,
+    resultsJson: null,
     createdAt: Number.isNaN(createdAt.getTime()) ? new Date() : createdAt,
+  }
+}
+
+function toPrismaProjectCreateData(project) {
+  return {
+    id: project.id,
+    ...toPrismaProjectScalarData(project),
+    images: {
+      create: toProjectRelationItems(project.images, 'url'),
+    },
+    techEntries: {
+      create: toProjectRelationItems(project.tech, 'value'),
+    },
+    resultEntries: {
+      create: toProjectRelationItems(project.results, 'value'),
+    },
+  }
+}
+
+function toPrismaProjectUpdateData(project) {
+  return {
+    ...toPrismaProjectScalarData(project),
+    images: {
+      deleteMany: {},
+      create: toProjectRelationItems(project.images, 'url'),
+    },
+    techEntries: {
+      deleteMany: {},
+      create: toProjectRelationItems(project.tech, 'value'),
+    },
+    resultEntries: {
+      deleteMany: {},
+      create: toProjectRelationItems(project.results, 'value'),
+    },
+  }
+}
+
+function hasLegacyProjectContent(record) {
+  return Boolean(cleanText(record.imagesJson) || cleanText(record.techJson) || cleanText(record.resultsJson))
+}
+
+function hasNormalizedProjectContent(record) {
+  return Boolean(record.images?.length || record.techEntries?.length || record.resultEntries?.length)
+}
+
+async function migrateLegacyProjectContent() {
+  const legacyProjects = await prisma.project.findMany({
+    where: {
+      OR: [
+        { imagesJson: { not: null } },
+        { techJson: { not: null } },
+        { resultsJson: { not: null } },
+      ],
+    },
+    include: projectInclude,
+  })
+
+  let migratedCount = 0
+
+  for (const record of legacyProjects) {
+    if (!hasLegacyProjectContent(record) || hasNormalizedProjectContent(record)) {
+      continue
+    }
+
+    await prisma.project.update({
+      where: { id: record.id },
+      data: {
+        imagesJson: null,
+        techJson: null,
+        resultsJson: null,
+        images: {
+          create: toProjectRelationItems(parseJsonList(record.imagesJson), 'url'),
+        },
+        techEntries: {
+          create: toProjectRelationItems(parseJsonList(record.techJson), 'value'),
+        },
+        resultEntries: {
+          create: toProjectRelationItems(parseJsonList(record.resultsJson), 'value'),
+        },
+      },
+    })
+
+    migratedCount += 1
+  }
+
+  if (migratedCount > 0) {
+    console.log(`Migrated legacy project JSON content for ${migratedCount} project(s).`)
   }
 }
 
@@ -94,6 +207,7 @@ async function listProjects() {
       { createdAt: 'desc' },
       { title: 'asc' },
     ],
+    include: projectInclude,
   })
 
   return sortProjects(records.map(toApiProject))
@@ -117,6 +231,7 @@ app.get('/api/projects', async (_request, response) => {
 app.get('/api/projects/:id', async (request, response) => {
   const record = await prisma.project.findUnique({
     where: { id: request.params.id },
+    include: projectInclude,
   })
 
   if (!record) {
@@ -142,7 +257,8 @@ app.post('/api/projects', async (request, response) => {
   }
 
   const createdRecord = await prisma.project.create({
-    data: toPrismaProjectData(normalizedProject),
+    data: toPrismaProjectCreateData(normalizedProject),
+    include: projectInclude,
   })
 
   response.status(201).json({ project: toApiProject(createdRecord) })
@@ -152,6 +268,7 @@ app.put('/api/projects/:id', async (request, response) => {
   const originalId = request.params.id
   const existingProject = await prisma.project.findUnique({
     where: { id: originalId },
+    include: projectInclude,
   })
 
   if (!existingProject) {
@@ -179,20 +296,23 @@ app.put('/api/projects/:id', async (request, response) => {
     return
   }
 
-  const prismaProjectData = toPrismaProjectData(normalizedProject)
+  const prismaProjectCreateData = toPrismaProjectCreateData(normalizedProject)
+  const prismaProjectUpdateData = toPrismaProjectUpdateData(normalizedProject)
 
   let savedRecord = null
 
   if (normalizedProject.id === originalId) {
     savedRecord = await prisma.project.update({
       where: { id: originalId },
-      data: prismaProjectData,
+      data: prismaProjectUpdateData,
+      include: projectInclude,
     })
   }
   else {
     savedRecord = await prisma.$transaction(async (transaction) => {
       const createdRecord = await transaction.project.create({
-        data: prismaProjectData,
+        data: prismaProjectCreateData,
+        include: projectInclude,
       })
 
       await transaction.project.delete({
@@ -238,11 +358,14 @@ app.post('/api/projects/import', async (request, response) => {
   })
 
   await prisma.$transaction(async (transaction) => {
+    await transaction.projectImage.deleteMany()
+    await transaction.projectTech.deleteMany()
+    await transaction.projectResult.deleteMany()
     await transaction.project.deleteMany()
 
-    if (normalizedProjects.length) {
-      await transaction.project.createMany({
-        data: normalizedProjects.map((project) => toPrismaProjectData(project)),
+    for (const project of normalizedProjects) {
+      await transaction.project.create({
+        data: toPrismaProjectCreateData(project),
       })
     }
   })
@@ -263,17 +386,36 @@ app.use((error, _request, response, _next) => {
   response.status(400).json({ error: message })
 })
 
-const server = app.listen(port, () => {
-  console.log(`foOlio Prisma API listening on http://localhost:${port}`)
-})
+let server = null
+
+async function startServer() {
+  await migrateLegacyProjectContent()
+
+  server = app.listen(port, () => {
+    console.log(`foOlio Prisma API listening on http://localhost:${port}`)
+  })
+}
 
 async function shutdown(signal) {
   console.log(`Stopping foOlio Prisma API on ${signal}...`)
+
+  if (!server) {
+    await prisma.$disconnect()
+    process.exit(0)
+    return
+  }
+
   server.close(async () => {
     await prisma.$disconnect()
     process.exit(0)
   })
 }
+
+void startServer().catch(async (error) => {
+  console.error('Unable to start foOlio Prisma API.', error)
+  await prisma.$disconnect()
+  process.exit(1)
+})
 
 process.on('SIGINT', () => {
   void shutdown('SIGINT')

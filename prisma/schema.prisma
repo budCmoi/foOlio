@@ -8,19 +8,55 @@ datasource db {
 }
 
 model Project {
-  id          String   @id
-  title       String
-  description String
-  statement   String
-  year        String
-  role        String
-  accent      String
-  link        String?
-  imagesJson  String
-  techJson    String
-  resultsJson String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String          @id
+  title        String
+  description  String
+  statement    String
+  year         String
+  role         String
+  accent       String
+  link         String?
+  imagesJson   String?
+  techJson     String?
+  resultsJson  String?
+  images       ProjectImage[]
+  techEntries  ProjectTech[]
+  resultEntries ProjectResult[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   @@map("projects")
+}
+
+model ProjectImage {
+  id        String  @id @default(cuid())
+  projectId String
+  url       String
+  position  Int
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, position])
+  @@map("project_images")
+}
+
+model ProjectTech {
+  id        String  @id @default(cuid())
+  projectId String
+  value     String
+  position  Int
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, position])
+  @@map("project_tech")
+}
+
+model ProjectResult {
+  id        String  @id @default(cuid())
+  projectId String
+  value     String
+  position  Int
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, position])
+  @@map("project_results")
 }

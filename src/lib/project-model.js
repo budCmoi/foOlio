@@ -143,7 +143,3 @@ export function parseJsonList(value) {
     return []
   }
 }
-
-export function stringifyJsonList(value) {
-  return JSON.stringify(Array.isArray(value) ? value : [])
-}
