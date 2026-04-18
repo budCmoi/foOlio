@@ -728,7 +728,7 @@ figure {
 }
 
 .custom-cursor {
-  --cursor-size: clamp(0.72rem, 0.8vw, 0.9rem);
+  --cursor-size: clamp(0.48rem, 0.56vw, 0.62rem);
   position: fixed;
   top: 0;
   left: 0;
@@ -738,7 +738,7 @@ figure {
   width: var(--cursor-size);
   height: var(--cursor-size);
   padding: 0;
-  border: 1px solid rgba(247, 242, 233, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.96);
   border-radius: 999px;
   background: rgba(247, 242, 233, 0.92);
   color: var(--text-inverse);
@@ -766,12 +766,12 @@ figure {
 .custom-cursor.has-label,
 .custom-cursor.is-accent {
   background: rgba(215, 255, 118, 0.95);
-  border-color: rgba(17, 17, 13, 0.1);
+  border-color: rgba(255, 255, 255, 0.96);
 }
 
 .custom-cursor.is-default {
   background: rgba(17, 17, 13, 0.84);
-  border-color: rgba(17, 17, 13, 0.16);
+  border-color: rgba(255, 255, 255, 0.96);
   color: var(--text);
 }
 
