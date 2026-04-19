@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import AboutSection from '@/components/AboutSection.vue'
 import ContactPanel from '@/components/ContactPanel.vue'
 import HeroSection from '@/components/HeroSection.vue'
@@ -12,10 +12,19 @@ import { useProjects } from '@/composables/useProjects'
 
 const root = ref(null)
 const { add } = useGSAPContext(root)
-const { projects } = useProjects()
+const { projects, projectsHydrated } = useProjects()
+const hasProjects = computed(() => projects.value.length > 0)
+const showEmptyProjectsState = computed(() => projectsHydrated.value && !hasProjects.value)
 
 onMounted(() => {
   add(() => {
+    const workList = root.value?.querySelector('.work-list')
+    const workListTargets = Array.from(workList?.children || [])
+    const workEmpty = root.value?.querySelector('.work-empty')
+    const workEmptyTargets = Array.from(workEmpty?.children || [])
+    const workAppendix = root.value?.querySelector('.work-section__appendix')
+    const workAppendixTargets = Array.from(workAppendix?.children || [])
+
     gsap.from('.work-section__heading > *', {
       y: 34,
       autoAlpha: 0,
@@ -25,23 +34,38 @@ onMounted(() => {
       scrollTrigger: createRevealTrigger('.work-section__heading'),
     })
 
-    gsap.from('.work-list > *', {
-      y: 62,
-      autoAlpha: 0,
-      stagger: 0.1,
-      duration: 0.86,
-      ease: 'power3.out',
-      scrollTrigger: createRevealTrigger('.work-list', { start: 'top 78%' }),
-    })
+    if (workListTargets.length) {
+      gsap.from(workListTargets, {
+        y: 62,
+        autoAlpha: 0,
+        stagger: 0.1,
+        duration: 0.86,
+        ease: 'power3.out',
+        scrollTrigger: createRevealTrigger(workList, { start: 'top 78%' }),
+      })
+    }
 
-    gsap.from('.work-section__appendix > *', {
-      y: 28,
-      autoAlpha: 0,
-      stagger: 0.08,
-      duration: 0.62,
-      ease: 'power3.out',
-      scrollTrigger: createRevealTrigger('.work-section__appendix'),
-    })
+    if (workEmptyTargets.length) {
+      gsap.from(workEmptyTargets, {
+        y: 36,
+        autoAlpha: 0,
+        stagger: 0.08,
+        duration: 0.72,
+        ease: 'power3.out',
+        scrollTrigger: createRevealTrigger(workEmpty, { start: 'top 80%' }),
+      })
+    }
+
+    if (workAppendixTargets.length) {
+      gsap.from(workAppendixTargets, {
+        y: 28,
+        autoAlpha: 0,
+        stagger: 0.08,
+        duration: 0.62,
+        ease: 'power3.out',
+        scrollTrigger: createRevealTrigger(workAppendix),
+      })
+    }
   })
 })
 </script>
@@ -61,7 +85,7 @@ onMounted(() => {
         </div>
       </div>
 
-      <div class="work-list">
+      <div v-if="hasProjects" class="work-list">
         <ProjectCard
           v-for="(project, index) in projects"
           :key="project.id"
@@ -70,7 +94,13 @@ onMounted(() => {
         />
       </div>
 
-      <div class="work-section__appendix">
+      <div v-else-if="showEmptyProjectsState" class="work-empty">
+        <p class="work-empty__eyebrow">Collection publique</p>
+        <h3>Aucun projet publie</h3>
+        <p>Les projets apparaitront ici une fois publies depuis le studio prive.</p>
+      </div>
+
+      <div v-if="hasProjects" class="work-section__appendix">
         <div>
           <p class="work-section__appendix-label">Vous voulez en voir plus ?</p>
           <p>{{ siteProfile.workAppendix }}</p>
