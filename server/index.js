@@ -19,11 +19,8 @@ const rootDirectory = path.resolve(path.dirname(currentFilePath), '..')
 const distDirectory = path.join(rootDirectory, 'dist')
 const indexFilePath = path.join(distDirectory, 'index.html')
 const port = Number.parseInt(process.env.PORT || '3001', 10)
+const host = process.env.HOST || '0.0.0.0'
 const reservedProjectIds = baseProjects.map((project) => project.id)
-const developmentOrigins = new Set([
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-])
 const projectInclude = {
   images: {
     orderBy: { position: 'asc' },
@@ -36,10 +33,50 @@ const projectInclude = {
   },
 }
 
+function isPrivateIpv4Address(value) {
+  if (!/^\d{1,3}(?:\.\d{1,3}){3}$/.test(value)) {
+    return false
+  }
+
+  const [firstOctet, secondOctet] = value
+    .split('.')
+    .map((entry) => Number.parseInt(entry, 10))
+
+  return firstOctet === 10
+    || (firstOctet === 172 && secondOctet >= 16 && secondOctet <= 31)
+    || (firstOctet === 192 && secondOctet === 168)
+}
+
+function isDevelopmentOriginAllowed(origin) {
+  if (!origin) {
+    return false
+  }
+
+  try {
+    const parsedOrigin = new URL(origin)
+
+    if (parsedOrigin.protocol !== 'http:' && parsedOrigin.protocol !== 'https:') {
+      return false
+    }
+
+    if (parsedOrigin.port !== '5173') {
+      return false
+    }
+
+    return parsedOrigin.hostname === 'localhost'
+      || parsedOrigin.hostname === '127.0.0.1'
+      || parsedOrigin.hostname === '::1'
+      || isPrivateIpv4Address(parsedOrigin.hostname)
+  }
+  catch {
+    return false
+  }
+}
+
 app.use((request, response, next) => {
   const origin = request.headers.origin
 
-  if (origin && developmentOrigins.has(origin)) {
+  if (isDevelopmentOriginAllowed(origin)) {
     response.header('Access-Control-Allow-Origin', origin)
     response.header('Vary', 'Origin')
     response.header('Access-Control-Allow-Headers', 'Content-Type')
@@ -391,8 +428,9 @@ let server = null
 async function startServer() {
   await migrateLegacyProjectContent()
 
-  server = app.listen(port, () => {
-    console.log(`foOlio Prisma API listening on http://localhost:${port}`)
+  server = app.listen(port, host, () => {
+    const displayHost = host === '0.0.0.0' ? 'localhost' : host
+    console.log(`foOlio Prisma API listening on http://${displayHost}:${port}`)
   })
 }
 
