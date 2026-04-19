@@ -78,8 +78,6 @@ export const siteProfile = {
       'Specs motion',
       'Prototypage rapide',
     ],
-    ctaLabel: 'Demander le CV',
-    ctaHref: 'mailto:drame.ibou.07@gmail.com?subject=Demande%20de%20CV',
   },
   contact: {
     eyebrow: 'Prendre contact',

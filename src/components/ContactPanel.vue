@@ -46,7 +46,7 @@ onBeforeUnmount(() => {
     <div class="contact-panel__grid" data-contact-item>
       <div class="contact-panel__mail">
         <div>
-          <MagneticLink class="button button--primary contact-panel__mail-button" :href="`mailto:${siteProfile.contact.email}`" cursor="Email">
+          <MagneticLink class="contact-panel__mail-link" :href="`mailto:${siteProfile.contact.email}`" cursor="Email">
             {{ siteProfile.contact.email }}
           </MagneticLink>
           <span>{{ siteProfile.location }}</span>

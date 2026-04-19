@@ -1256,19 +1256,25 @@ figure {
   gap: 1rem;
 }
 
-.contact-panel__mail p {
+.contact-panel__mail-link {
+  justify-content: flex-start;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
   font-size: clamp(calc(1.3rem * 0.72), calc(2.4vw * 0.72), calc(1.9rem * 0.72));
   font-weight: 500;
   letter-spacing: -0.03em;
 }
 
-.contact-panel__mail-button {
-  width: fit-content;
-  min-height: 3rem;
-  padding: 0.75rem 1.05rem;
-  font-size: clamp(calc(1rem * 0.72), calc(1.7vw * 0.72), calc(1.2rem * 0.72));
-  letter-spacing: -0.02em;
-  text-transform: none;
+.contact-panel__mail-link:hover {
+  transform: none;
+  color: var(--muted-strong);
+}
+
+.contact-panel__mail-link .magnetic-link__inner {
+  justify-content: flex-start;
 }
 
 .contact-panel__mail span {

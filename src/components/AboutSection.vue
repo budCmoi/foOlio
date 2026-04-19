@@ -1,6 +1,5 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import MagneticLink from '@/components/MagneticLink.vue'
 import { siteProfile } from '@/data/projects'
 import { createRevealTrigger, gsap, useGSAPContext } from '@/composables/useGSAP'
 
@@ -45,10 +44,6 @@ onMounted(() => {
         <p v-for="paragraph in siteProfile.about.paragraphs" :key="paragraph">
           {{ paragraph }}
         </p>
-
-        <MagneticLink class="button button--ghost" :href="siteProfile.about.ctaHref" cursor="CV">
-          {{ siteProfile.about.ctaLabel }}
-        </MagneticLink>
       </div>
 
       <div class="about-section__grid">
