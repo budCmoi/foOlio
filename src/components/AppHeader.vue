@@ -1,6 +1,5 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import MagneticLink from '@/components/MagneticLink.vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { siteProfile } from '@/data/projects'
 import { useUiState } from '@/composables/useUiState'
@@ -35,7 +34,7 @@ onBeforeUnmount(() => {
   <header class="app-header" :class="{ 'is-compact': compact, 'is-open': menuOpen, 'is-secondary': !isHomeRoute }">
     <div class="app-header__inner">
       <RouterLink class="app-header__brand" :to="{ path: '/', hash: '#hero' }" data-cursor="Accueil" @click="ui.closeMenu">
-        <span class="app-header__brand-text">{{ isProjectRoute ? 'dvd' : siteProfile.handle }}</span>
+        <span class="app-header__brand-text">{{ isProjectRoute ? 'm.ali' : siteProfile.handle }}</span>
       </RouterLink>
 
       <nav class="app-header__nav" aria-label="Navigation principale">
@@ -52,10 +51,6 @@ onBeforeUnmount(() => {
       </nav>
 
       <div class="app-header__actions">
-        <MagneticLink v-if="!isHomeRoute" class="app-header__back-link" :to="{ path: '/', hash: '#hero' }" cursor="Accueil">
-          Retour a la maison
-        </MagneticLink>
-
         <button class="theme-toggle" type="button" aria-label="Basculer le theme" data-cursor="Theme" @click="ui.toggleTheme">
           <span class="theme-toggle__icon" aria-hidden="true"></span>
           <span>{{ ui.themeLabel }}</span>
