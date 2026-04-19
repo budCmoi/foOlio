@@ -12,7 +12,7 @@
   --accent: #f5f5f5;
   --accent-contrast: #0c0c0b;
   --success: #75ff8a;
-  --shadow: 0 28px 90px rgba(0, 0, 0, 0.28);
+  --shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
   --radius-sm: 1rem;
   --radius: 1.6rem;
   --radius-lg: 2.2rem;
@@ -36,7 +36,7 @@
   --accent: #11110f;
   --accent-contrast: #f7f3ec;
   --success: #168a3a;
-  --shadow: 0 28px 70px rgba(44, 36, 26, 0.12);
+  --shadow: 0 18px 40px rgba(44, 36, 26, 0.12);
 }
 
 * {
@@ -307,6 +307,7 @@ figure {
     background-color 0.25s ease,
     color 0.25s ease,
     box-shadow 0.25s ease;
+  box-shadow: var(--shadow);
 }
 
 .magnetic-link__inner {
@@ -491,7 +492,7 @@ figure {
   border-radius: 999px;
   background: rgba(12, 12, 11, 0.72);
   backdrop-filter: blur(18px);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
+  box-shadow: var(--shadow);
   pointer-events: auto;
 }
 
@@ -1055,6 +1056,7 @@ figure {
   background: rgba(255, 255, 255, 0.02);
   color: var(--text);
   font-size: calc(0.86rem * 0.72);
+  box-shadow: var(--shadow);
 }
 
 :root[data-theme='light'] .work-card__tags span,
@@ -1093,6 +1095,7 @@ figure {
   border-radius: calc(var(--radius-lg) - 0.45rem);
   min-height: 100%;
   background: var(--surface-soft);
+  box-shadow: var(--shadow);
 }
 
 .work-card__media img {
@@ -1247,6 +1250,7 @@ figure {
   padding: 1.5rem 0;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
 }
 
 .contact-panel__mail {
@@ -1566,6 +1570,7 @@ figure {
   background: rgba(255, 255, 255, 0.02);
   color: var(--text);
   font-size: calc(0.8rem * 0.72);
+  box-shadow: var(--shadow);
 }
 
 :root[data-theme='light'] .case-study-chip-list li {
@@ -1868,6 +1873,7 @@ figure {
   padding: 0.9rem 1rem;
   border: 1px solid var(--border-strong);
   border-radius: 1rem;
+  box-shadow: var(--shadow);
 }
 
 .studio-feedback.is-success,
@@ -1895,6 +1901,7 @@ figure {
   border: 1px solid var(--border);
   border-radius: 1rem;
   background: var(--surface-soft);
+  box-shadow: var(--shadow);
 }
 
 .studio-section-field__header {
@@ -1945,6 +1952,7 @@ figure {
   background: transparent;
   outline: none;
   transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow);
 }
 
 .studio-field input:focus,

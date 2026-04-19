@@ -55,20 +55,15 @@ npm run build
 Le projet est prêt pour un déploiement Render Node via le fichier render.yaml à la racine.
 
 - Build command : npm ci --include=dev && npm run build
-- Start command : npm run start
+- Start command : npm run start:render
+- Health check path : /api/health
 - Version Node : 22.22.0 sur Render, avec compatibilité déclarée dans package.json
+
+Le démarrage Render exécute maintenant `prisma migrate deploy` avant de lancer l API. Cela évite qu un nouveau déploiement parte avec un schéma SQLite en retard par rapport au code serveur.
 
 Si le service Render existe déjà, il doit être resynchronisé avec le dépôt ou relancé depuis le dashboard Render pour prendre en compte cette configuration.
 
-Pour recréer le static site après suppression, un script d'automatisation est aussi disponible dans scripts/create-render-site.mjs.
-
-Exemple d'usage :
-
-1. créer une clé API Render
-2. définir RENDER_API_KEY dans l'environnement
-3. lancer node scripts/create-render-site.mjs
-
-Le script tente de retrouver le workspace, crée le static site GitHub sur la branche main, injecte NODE_VERSION et SKIP_INSTALL_DEPS, puis ajoute la réécriture SPA vers /index.html.
+L ancien script scripts/create-render-site.mjs ciblait un static site. Il n est plus la voie recommandée maintenant que foOlio tourne en service Node avec API Prisma integree.
 
 ## Auteur
 [budCmoi](https://github.com/budCmoi)

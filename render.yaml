@@ -3,7 +3,8 @@ services:
     name: foolio
     runtime: node
     buildCommand: npm ci --include=dev && npm run build
-    startCommand: npm run start
+    startCommand: npm run start:render
+    healthCheckPath: /api/health
     autoDeployTrigger: commit
     envVars:
       - key: NODE_VERSION

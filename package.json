@@ -10,7 +10,8 @@
     "dev": "vite",
     "build": "prisma generate && vite build",
     "preview": "vite preview",
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "start:render": "prisma migrate deploy && node server/index.js"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
