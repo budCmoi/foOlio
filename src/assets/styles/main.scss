@@ -2127,7 +2127,8 @@ figure {
 
   .page--home .hero__scroll {
     position: absolute;
-    top: 0;
+    top: auto;
+    bottom: 0;
     right: 0;
     justify-self: auto;
     gap: 0.85rem;
@@ -2258,7 +2259,8 @@ figure {
   }
 
   .page--home .hero__scroll {
-    top: 0.15rem;
+    top: auto;
+    bottom: 0.25rem;
     right: 0;
     gap: 0.7rem;
     font-size: calc(0.93rem * 0.72);
