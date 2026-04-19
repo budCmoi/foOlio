@@ -48,10 +48,23 @@ export const siteProfile = {
         subtitle: 'Du concept au composant final sans rupture',
         note: 'De bout en bout',
       },
+      {
+        title: 'AI DEV',
+        subtitle: 'Automatisations, assistants de production et iterations plus rapides',
+        note: 'Workflow',
+      },
     ],
     experience: [
-      { company: 'Independent', role: 'Designer frontend et motion', period: '2024 - Aujourd\'hui' },
-      { company: 'Studio Product', role: 'Frontend engineer', period: '2022 - 2024' },
+      {
+        company: 'Parcours autodidacte',
+        role: 'Aucun poste en entreprise : progression construite par curiosite, tests et execution reelle.',
+        period: 'Depuis 2022',
+      },
+      {
+        company: 'Projets complexes',
+        role: 'Interfaces, motion et systemes frontend menes seul de l idee a la mise en ligne.',
+        period: 'En continu',
+      },
     ],
     skills: [
       'Vue 3',

@@ -53,7 +53,6 @@ onBeforeUnmount(() => {
       <div class="app-header__actions">
         <button class="theme-toggle" type="button" aria-label="Basculer le theme" data-cursor="Theme" @click="ui.toggleTheme">
           <span class="theme-toggle__icon" aria-hidden="true"></span>
-          <span>{{ ui.themeLabel }}</span>
         </button>
 
         <button
