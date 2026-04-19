@@ -13,9 +13,6 @@ export const siteProfile = {
     { label: '4 ans d\'experience' },
   ],
   workIntro: 'Une selection resserree d\'interfaces construites autour du rythme, de la retenue et de systemes motion prets pour la production.',
-  workAppendix: 'Un dossier PDF avec davantage d\'etudes de cas, de specs motion et de vues systeme est disponible sur demande pour les missions serieuses.',
-  workCtaLabel: 'Demander le dossier',
-  workCtaHref: 'mailto:drame.ibou.07@gmail.com?subject=Demande%20de%20dossier%20PDF',
   marquee: [
     'Vision systeme',
     'Choregraphie de scroll',

@@ -1193,7 +1193,7 @@ figure {
 
 .about-section__grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
   gap: 1rem;
 }
 
@@ -1228,8 +1228,9 @@ figure {
 }
 
 .about-list li {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
   gap: 1rem;
   padding-top: 0.9rem;
   border-top: 1px solid var(--border);
@@ -1243,6 +1244,7 @@ figure {
 .about-list li div {
   display: grid;
   gap: 0.15rem;
+  min-width: 0;
 }
 
 .about-list li strong {
@@ -1253,6 +1255,11 @@ figure {
 .about-focus li {
   color: var(--muted);
   line-height: 1.55;
+}
+
+.about-list li > span {
+  flex: 0 0 auto;
+  text-align: right;
 }
 
 .about-skills {
