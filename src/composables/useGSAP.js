@@ -10,7 +10,7 @@ export { gsap, ScrollTrigger }
 export function createRevealTrigger(trigger, options = {}) {
   return {
     trigger,
-    start: 'top 80%',
+    start: 'top 84%',
     toggleActions: 'play none none reverse',
     ...options,
   }
@@ -44,21 +44,31 @@ export function useGSAPContext(scope) {
 }
 
 export function splitReveal(target, timeline, options = {}) {
+  if (!target || !timeline) {
+    return () => {}
+  }
+
   const split = new SplitType(target, {
     types: options.types || 'lines,words',
     tagName: 'span',
   })
 
-  const lines = split.lines?.length ? split.lines : split.words
+  const animationTarget = split.lines?.length
+    ? split.lines
+    : split.words?.length
+      ? split.words
+      : []
 
-  gsap.set(lines, {
+  if (!animationTarget.length) {
+    return () => split.revert()
+  }
+
+  gsap.set(animationTarget, {
     yPercent: 105,
     opacity: 0,
     transformOrigin: '0% 100%',
     willChange: 'transform, opacity',
   })
-
-  const animationTarget = lines || split.words || []
 
   timeline.to(animationTarget, {
     yPercent: 0,

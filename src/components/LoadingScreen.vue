@@ -1,5 +1,6 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { siteProfile } from '@/data/projects'
 import { gsap } from '@/composables/useGSAP'
 
 const props = defineProps({
@@ -14,6 +15,7 @@ const emit = defineEmits(['complete'])
 const progress = ref(0)
 const screen = ref(null)
 const bar = ref(null)
+const nameWords = computed(() => siteProfile.name.split(/\s+/).filter(Boolean))
 
 let hasCompleted = false
 
@@ -41,7 +43,7 @@ onMounted(() => {
     })
     .to(state, {
       value: 100,
-      duration: 1.3,
+      duration: 1.2,
       onUpdate: () => {
         progress.value = Math.round(state.value)
       },
@@ -51,7 +53,7 @@ onMounted(() => {
     }, {
       scaleX: 1,
       transformOrigin: '0% 50%',
-      duration: 1.3,
+      duration: 1.2,
     }, 0.15)
 })
 
@@ -72,16 +74,15 @@ watch(() => props.visible, (isVisible) => {
 <template>
   <div ref="screen" class="loading-screen" :class="{ 'is-visible': visible }">
     <div class="loading-screen__inner">
-      <p class="loading-screen__label">Chargement de l'expérience</p>
+      <p class="loading-screen__label">Chargement du portfolio</p>
       <h2 class="loading-screen__title">
-        <span class="word">Mohamed</span>
-        <span class="word">Ali</span>
+        <span v-for="word in nameWords" :key="word" class="word">{{ word }}</span>
       </h2>
       <div class="loading-screen__progress">
-        <span>{{ progress }}%</span>
         <div class="loading-screen__bar">
           <span ref="bar"></span>
         </div>
+        <span>{{ progress }}%</span>
       </div>
     </div>
   </div>

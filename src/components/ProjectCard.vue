@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { gsap, isMobileViewport, isReducedMotion } from '@/composables/useGSAP'
 
@@ -16,6 +16,25 @@ const props = defineProps({
 
 const card = ref(null)
 const media = ref(null)
+const paddedIndex = computed(() => String(props.index + 1).padStart(2, '0'))
+const projectMeta = computed(() => `${props.project.client || props.project.title} / ${props.project.year}`)
+const projectTags = computed(() => {
+  if (Array.isArray(props.project.tags) && props.project.tags.length) {
+    return props.project.tags.slice(0, 2)
+  }
+
+  return props.project.tech.slice(0, 2)
+})
+const projectMetrics = computed(() => {
+  if (Array.isArray(props.project.metrics) && props.project.metrics.length) {
+    return props.project.metrics.slice(0, 2)
+  }
+
+  return props.project.results.slice(0, 2).map((entry, index) => ({
+    value: String(index + 1).padStart(2, '0'),
+    label: entry,
+  }))
+})
 
 let onMove = null
 let onLeave = null
@@ -83,13 +102,35 @@ onBeforeUnmount(() => {
   <RouterLink :to="`/project/${project.id}`" custom v-slot="{ href, navigate }">
     <a
       ref="card"
-      class="project-card"
+      class="project-card work-card"
       :href="href"
       :style="{ '--project-accent': project.accent }"
       data-cursor="Ouvrir"
       @click="navigate"
     >
-      <div class="project-card__media">
+      <div class="work-card__copy">
+        <div class="work-card__overview">
+          <span class="work-card__index">{{ paddedIndex }}</span>
+
+          <div class="work-card__headline">
+            <p class="work-card__meta">{{ projectMeta }}</p>
+            <h3>{{ project.title }}</h3>
+
+            <div class="work-card__tags">
+              <span v-for="tag in projectTags" :key="tag">{{ tag }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="work-card__metrics">
+          <div v-for="metric in projectMetrics" :key="`${metric.value}-${metric.label}`" class="work-card__metric">
+            <strong>{{ metric.value }}</strong>
+            <span>{{ metric.label }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="work-card__media">
         <img
           ref="media"
           :src="project.images[0]"
@@ -97,23 +138,11 @@ onBeforeUnmount(() => {
           loading="lazy"
           decoding="async"
         />
-        <span class="project-card__index">{{ String(index + 1).padStart(2, '0') }}</span>
-      </div>
 
-      <div class="project-card__body">
-        <div class="project-card__meta">
-          <span>{{ project.year }}</span>
-          <span>{{ project.role }}</span>
+        <div class="work-card__overlay" aria-hidden="true">
+          <span>Voir le projet</span>
+          <span>↗</span>
         </div>
-
-        <div class="project-card__copy">
-          <h3>{{ project.title }}</h3>
-          <p>{{ project.description }}</p>
-        </div>
-
-        <ul class="project-card__tech">
-          <li v-for="item in project.tech.slice(0, 3)" :key="item">{{ item }}</li>
-        </ul>
       </div>
     </a>
   </RouterLink>

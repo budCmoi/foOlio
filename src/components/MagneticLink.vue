@@ -22,7 +22,7 @@ const props = defineProps({
   },
   cursor: {
     type: String,
-    default: 'Open',
+    default: 'Ouvrir',
   },
   external: {
     type: Boolean,

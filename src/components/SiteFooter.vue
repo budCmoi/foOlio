@@ -8,21 +8,19 @@ const currentYear = new Date().getFullYear()
   <footer class="site-footer">
     <div class="site-footer__inner">
       <div class="site-footer__brand">
-        <p class="site-footer__eyebrow">foOlio / Portfolio</p>
+        <p class="site-footer__eyebrow">Navigation secondaire</p>
         <h2>{{ siteProfile.name }}</h2>
         <p>{{ siteProfile.role }} · {{ siteProfile.location }}</p>
-        <p class="site-footer__signature">{{ siteProfile.signature }}</p>
       </div>
 
       <div class="site-footer__links">
-        <a :href="`mailto:${siteProfile.email}`">{{ siteProfile.email }}</a>
-        <a href="/#projects">Projets</a>
+        <a href="mailto:hello@foolio.dev">hello@foolio.dev</a>
+        <a href="/#work">Projets</a>
         <a href="/#contact">Contact</a>
       </div>
 
       <div class="site-footer__meta">
-        <span>© {{ currentYear }} Mohamed Ali / foOlio</span>
-        <span>{{ siteProfile.credit }}</span>
+        <span>© {{ currentYear }} Mohamed Ali</span>
         <span>{{ siteProfile.availability }}</span>
       </div>
     </div>
@@ -60,15 +58,15 @@ const currentYear = new Date().getFullYear()
 
 .site-footer__eyebrow,
 .site-footer__meta span {
-  font-size: 0.58rem;
+  font-size: calc(0.58rem * 0.72);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-soft, rgba(247, 242, 233, 0.62));
 }
 
 .site-footer__brand h2 {
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(1rem, 1.4vw, 1.25rem);
+  font-family: var(--font-display, 'League Spartan', sans-serif);
+  font-size: clamp(calc(1rem * 0.72), calc(1.4vw * 0.72), calc(1.25rem * 0.72));
   line-height: 1;
 }
 
@@ -76,15 +74,7 @@ const currentYear = new Date().getFullYear()
 .site-footer__links a {
   color: var(--text, rgba(247, 242, 233, 0.88));
   line-height: 1.45;
-  font-size: 0.74rem;
-}
-
-.site-footer__signature {
-  font-family: 'Syne', sans-serif;
-  font-size: 0.62rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--accent, #d7ff76);
+  font-size: calc(0.74rem * 0.72);
 }
 
 .site-footer__links {

@@ -5,7 +5,6 @@ import AppHeader from '@/components/AppHeader.vue'
 import CustomCursor from '@/components/CustomCursor.vue'
 import FullscreenMenu from '@/components/FullscreenMenu.vue'
 import LoadingScreen from '@/components/LoadingScreen.vue'
-import SceneBackground from '@/components/SceneBackground.vue'
 import SiteFooter from '@/components/SiteFooter.vue'
 import { gsap, ScrollTrigger } from '@/composables/useGSAP'
 import { scrollToTarget, useLenis } from '@/composables/useLenis'
@@ -19,6 +18,7 @@ const { startLenis, stopLenis } = useLenis()
 const transitionVeil = ref(null)
 const viewKey = computed(() => route.path)
 const loaderVisible = ui.loaderVisible
+const showSiteFooter = computed(() => route.name !== 'home')
 
 const transitionLabel = computed(() => {
   if (route.name === 'project' && typeof route.params.id === 'string') {
@@ -38,7 +38,7 @@ const transitionLabel = computed(() => {
 
 watch([ui.menuOpen, ui.loaderVisible, ui.transitioning], ([isMenuOpen, isLoading, isTransitioning]) => {
   const shouldStopScroll = isMenuOpen || isLoading || isTransitioning
-  const shouldLockHtml = isLoading || isTransitioning
+  const shouldLockHtml = isMenuOpen || isLoading || isTransitioning
 
   document.documentElement.classList.toggle('is-locked', shouldLockHtml)
 
@@ -193,6 +193,8 @@ function onBeforeEnter(element) {
 }
 
 function onEnter(element, done) {
+  const pageIntroNodes = element.querySelectorAll('[data-page-intro]')
+
   gsap.timeline({
     defaults: {
       ease: 'power3.out',
@@ -210,12 +212,17 @@ function onEnter(element, done) {
       clipPath: 'inset(0% 0% 0% 0% round 0rem)',
       duration: 1.1,
     }, 0.18)
-    .from(element.querySelectorAll('[data-page-intro]'), {
+
+  if (pageIntroNodes.length) {
+    gsap.from(pageIntroNodes, {
       y: 28,
       autoAlpha: 0,
       stagger: 0.05,
       duration: 0.7,
-    }, '-=0.62')
+      delay: 0.48,
+      ease: 'power3.out',
+    })
+  }
 }
 
 function onLeave(element, done) {
@@ -239,7 +246,6 @@ function onLeave(element, done) {
 <template>
   <div class="app-shell">
     <div class="app-shell__backdrop" aria-hidden="true"></div>
-    <SceneBackground />
     <div ref="transitionVeil" class="route-transition" aria-hidden="true">
       <div class="route-transition__panel route-transition__panel--left"></div>
       <div class="route-transition__panel route-transition__panel--right"></div>
@@ -255,6 +261,6 @@ function onLeave(element, done) {
         <component :is="Component" :key="viewKey" />
       </Transition>
     </RouterView>
-    <SiteFooter />
+    <SiteFooter v-if="showSiteFooter" />
   </div>
 </template>

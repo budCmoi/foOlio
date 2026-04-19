@@ -4,14 +4,14 @@ import { ScrollTrigger, gsap, isReducedMotion } from '@/composables/useGSAP'
 
 const lenis = shallowRef(null)
 let tickerCallback = null
-const defaultScrollToDuration = 2.8
+const defaultScrollToDuration = 1.2
 const defaultLenisOptions = {
-  duration: 1.55,
+  duration: 1.15,
   smoothWheel: true,
   smoothTouch: true,
   syncTouch: true,
-  wheelMultiplier: 0.45,
-  touchMultiplier: 0.62,
+  wheelMultiplier: 0.9,
+  touchMultiplier: 0.95,
 }
 
 function shouldUseNativeScroll() {

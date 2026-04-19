@@ -10,6 +10,7 @@ const loaderVisible = ui.loaderVisible
 const transitioning = ui.transitioning
 const cursorText = ui.cursorText
 const cursorTheme = ui.cursorTheme
+const menuOpen = ui.menuOpen
 
 let onMove = null
 let onDown = null
@@ -110,7 +111,7 @@ onBeforeUnmount(() => {
       `is-${cursorTheme}`,
       {
         'is-active': active,
-        'is-hidden': loaderVisible || transitioning,
+        'is-hidden': loaderVisible || transitioning || menuOpen,
         'has-label': Boolean(cursorText),
       },
     ]"

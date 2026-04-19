@@ -2,7 +2,6 @@
 import { computed, ref } from 'vue'
 import MagneticLink from '@/components/MagneticLink.vue'
 import { siteProfile } from '@/data/projects'
-import { generateProjectDraftFromSource } from '@/composables/useProjectDraftGenerator'
 import {
   addCustomProject,
   createProjectSlug,
@@ -46,79 +45,15 @@ function readFileAsDataUrl(file) {
   })
 }
 
-const {
-  customProjects,
-  projectStorageError,
-  projectStorageMode,
-  projectStoragePending,
-} = useProjects()
+const { customProjects } = useProjects()
 
 const form = ref(createEmptyForm())
 const imageUrl = ref('')
 const editingProjectId = ref('')
 const feedback = ref({ type: '', text: '' })
-const generationSource = ref('')
-const isGeneratingDraft = ref(false)
-const projectSearchQuery = ref('')
 
 const isEditing = computed(() => Boolean(editingProjectId.value))
 const suggestedSlug = computed(() => createProjectSlug(form.value.id || form.value.title))
-const normalizedProjectSearchQuery = computed(() => projectSearchQuery.value.trim().toLowerCase())
-const filteredProjects = computed(() => {
-  const query = normalizedProjectSearchQuery.value
-
-  if (!query) {
-    return customProjects.value
-  }
-
-  return customProjects.value.filter((project) => {
-    const haystack = [
-      project.title,
-      project.id,
-      project.year,
-      project.role,
-      project.description,
-      project.statement,
-      project.link,
-      ...project.tech,
-      ...project.results,
-    ]
-      .join(' ')
-      .toLowerCase()
-
-    return haystack.includes(query)
-  })
-})
-const projectSearchSummary = computed(() => {
-  const totalProjects = customProjects.value.length
-  const visibleProjects = filteredProjects.value.length
-
-  if (!totalProjects) {
-    return 'Aucun projet personnalise pour l’instant.'
-  }
-
-  if (!normalizedProjectSearchQuery.value) {
-    return `${totalProjects} projet(s) personnalise(s) disponible(s) dans le studio.`
-  }
-
-  return `${visibleProjects} resultat(s) sur ${totalProjects} projet(s).`
-})
-const storageStatusTone = computed(() => (projectStorageError.value ? 'is-error' : 'is-success'))
-const storageStatusMessage = computed(() => {
-  if (projectStorageError.value) {
-    return `${projectStorageError.value} La synchronisation Prisma n a pas pu aboutir.`
-  }
-
-  if (projectStoragePending.value) {
-    return 'Synchronisation Prisma en cours. Les projets et leurs images sont envoyés vers l API avant d etre stockés en base.'
-  }
-
-  if (projectStorageMode.value === 'prisma') {
-    return 'Synchronisation Prisma active. Les projets et leurs images sont stockés en base via l API Express.'
-  }
-
-  return 'Prisma est configuré mais la connexion à l API n est pas encore prête.'
-})
 
 function showFeedback(type, text) {
   feedback.value = { type, text }
@@ -128,7 +63,6 @@ function resetForm() {
   form.value = createEmptyForm()
   imageUrl.value = ''
   editingProjectId.value = ''
-  generationSource.value = ''
   showFeedback('', '')
 }
 
@@ -166,62 +100,12 @@ function buildPayload() {
   }
 }
 
-function applyGeneratedDraft(draft) {
-  form.value = {
-    ...form.value,
-    title: form.value.title || draft.title,
-    description: draft.description || form.value.description,
-    statement: draft.statement || form.value.statement,
-    role: draft.role || form.value.role,
-    link: form.value.link || draft.link,
-    tech: draft.tech?.length ? toMultiline(draft.tech) : form.value.tech,
-    results: draft.results?.length ? toMultiline(draft.results) : form.value.results,
-  }
-}
-
-async function generateDraftFromSource() {
-  const source = generationSource.value.trim() || form.value.link.trim()
-
-  if (!source) {
-    showFeedback('error', 'Ajoute un lien de site ou un repo GitHub public avant de lancer la generation.')
-    return
-  }
-
-  isGeneratingDraft.value = true
-  showFeedback('info', 'Analyse du lien en cours...')
-
-  try {
-    const draft = await generateProjectDraftFromSource(source)
-
-    applyGeneratedDraft(draft)
-    generationSource.value = source
-
-    if (draft.sourceKind === 'github' && !draft.link) {
-      showFeedback('success', 'Brouillon genere depuis GitHub. Ajoute seulement le lien live si le repo n expose pas de homepage et ajoute tes images manuellement.')
-      return
-    }
-
-    if (draft.sourceKind === 'website' && !draft.tech.length) {
-      showFeedback('success', 'Brouillon genere depuis le site. Verifie les technos manuellement si tu veux des tags plus precis.')
-      return
-    }
-
-    showFeedback('success', 'Brouillon genere. Verifie les textes puis ajoute tes images avant d enregistrer.')
-  }
-  catch (error) {
-    showFeedback('error', error instanceof Error ? error.message : 'Impossible de generer un brouillon depuis ce lien.')
-  }
-  finally {
-    isGeneratingDraft.value = false
-  }
-}
-
-async function submitForm() {
+function submitForm() {
   try {
     const payload = buildPayload()
     const project = isEditing.value
-      ? await updateCustomProject(editingProjectId.value, payload)
-      : await addCustomProject(payload)
+      ? updateCustomProject(editingProjectId.value, payload)
+      : addCustomProject(payload)
 
     resetForm()
     showFeedback(
@@ -282,20 +166,14 @@ function removeImage(index) {
   form.value.images = form.value.images.filter((_, entryIndex) => entryIndex !== index)
 }
 
-async function deleteProject(project) {
-  const confirmed = window.confirm(`Supprimer ${project.title} du studio ?`)
+function deleteProject(project) {
+  const confirmed = window.confirm(`Supprimer ${project.title} du navigateur ?`)
 
   if (!confirmed) {
     return
   }
 
-  try {
-    await removeCustomProject(project.id)
-  }
-  catch (error) {
-    showFeedback('error', error instanceof Error ? error.message : 'Suppression impossible.')
-    return
-  }
+  removeCustomProject(project.id)
 
   if (editingProjectId.value === project.id) {
     resetForm()
@@ -321,7 +199,7 @@ function downloadBackup() {
   const anchor = document.createElement('a')
 
   anchor.href = url
-  anchor.download = 'foolio-projets-personnalises.json'
+  anchor.download = 'mohamedali-custom-projects.json'
   anchor.click()
 
   URL.revokeObjectURL(url)
@@ -337,7 +215,7 @@ async function handleImport(event) {
 
   try {
     const json = await file.text()
-    const importedProjects = await importCustomProjects(json)
+    const importedProjects = importCustomProjects(json)
     showFeedback('success', `${importedProjects.length} projet(s) personnalise(s) importe(s).`)
   }
   catch (error) {
@@ -355,10 +233,10 @@ async function handleImport(event) {
       <div class="section-heading">
         <p class="section-tag">Acces prive</p>
         <div>
-          <h1>Ajouter un projet depuis un studio prive, synchronise avec Prisma.</h1>
+          <h1>Ajouter un projet depuis une interface cachee, sans toucher au code.</h1>
           <p>
             Cette page n'apparait nulle part dans la navigation publique. Chaque projet ajoute ici s'affiche ensuite sur l'accueil,
-            possede sa propre page detail et reste synchronise en base via Prisma, sans dependre d un service externe additionnel.
+            possede sa propre page detail et la galerie continue naturellement aussi longtemps qu'il y a des images a faire defiler.
           </p>
         </div>
       </div>
@@ -375,10 +253,6 @@ async function handleImport(event) {
           <input type="file" accept="application/json" @change="handleImport" />
         </label>
       </div>
-
-      <p class="studio-feedback" :class="storageStatusTone">
-        {{ storageStatusMessage }}
-      </p>
     </section>
 
     <section class="studio-grid page-block">
@@ -389,7 +263,7 @@ async function handleImport(event) {
             <h2>{{ isEditing ? 'Modifier un projet personnalise' : 'Ajouter un nouveau projet' }}</h2>
             <p>
               Renseigne tout ce que le visiteur voit deja sur une page projet : titre, description, phrase d'accroche,
-              technologies, resultats, images et lien live. Le contenu est ensuite synchronise dans la base Prisma.
+              technologies, resultats, images et lien live si tu veux l'afficher.
             </p>
           </div>
         </div>
@@ -428,7 +302,7 @@ async function handleImport(event) {
 
             <label class="studio-field">
               <span>Role</span>
-              <input v-model.trim="form.role" type="text" placeholder="Full-stack / AI engineer" required />
+              <input v-model.trim="form.role" type="text" placeholder="Direction creative / Motion frontend" required />
             </label>
 
             <label class="studio-field">
@@ -445,29 +319,6 @@ async function handleImport(event) {
               <small>Optionnel. Si tu le laisses vide, le bouton live disparaitra de la page projet.</small>
             </label>
 
-            <div class="studio-field studio-field--full studio-field--generation">
-              <span>Generation depuis un lien</span>
-              <input
-                v-model.trim="generationSource"
-                type="url"
-                placeholder="Colle un site live ou un repo GitHub public"
-              />
-              <small>
-                Colle un lien live ou GitHub puis genere description, phrase d accroche, role et resultats. Avec GitHub,
-                les technos sont aussi proposees. Les images restent manuelles.
-              </small>
-              <div class="studio-field__actions">
-                <button
-                  class="button button--secondary"
-                  type="button"
-                  :disabled="isGeneratingDraft || !(generationSource.trim() || form.link.trim())"
-                  @click="generateDraftFromSource"
-                >
-                  {{ isGeneratingDraft ? 'Generation en cours...' : 'Generer un brouillon depuis ce lien' }}
-                </button>
-              </div>
-            </div>
-
             <label class="studio-field studio-field--full">
               <span>Technologies</span>
               <textarea v-model="form.tech" rows="4" placeholder="Une technologie par ligne"></textarea>
@@ -482,7 +333,7 @@ async function handleImport(event) {
           <div class="studio-panel__heading studio-panel__heading--nested">
             <div>
               <h3>Images du projet</h3>
-              <p>Ajoute autant d'images que tu veux. Elles sont envoyees telles quelles a l API Prisma puis enregistrees avec le projet dans la base.</p>
+              <p>Ajoute autant d'images que tu veux. La page detail continuera a s'etendre automatiquement.</p>
             </div>
           </div>
 
@@ -520,7 +371,7 @@ async function handleImport(event) {
           </p>
 
           <div class="studio-form__actions">
-            <button class="button button--primary" type="submit" :disabled="projectStoragePending">
+            <button class="button button--primary" type="submit">
               {{ isEditing ? 'Mettre a jour le projet' : 'Enregistrer le projet' }}
             </button>
             <button class="button button--ghost" type="button" @click="resetForm">
@@ -532,39 +383,13 @@ async function handleImport(event) {
 
       <aside class="studio-panel studio-panel--sidebar" data-page-intro>
         <div class="studio-panel__heading">
-          <div>
-            <h2>Choisir un projet existant</h2>
-            <p>{{ projectSearchSummary }}</p>
-          </div>
+          <h2>Projets personnalisés</h2>
         </div>
 
-        <div v-if="customProjects.length" class="studio-project-search">
-          <input
-            v-model="projectSearchQuery"
-            type="search"
-            class="studio-project-search__input"
-            placeholder="Rechercher par titre, slug, annee, role ou techno"
-          />
-          <button
-            v-if="projectSearchQuery"
-            class="button button--ghost"
-            type="button"
-            @click="projectSearchQuery = ''"
-          >
-            Effacer
-          </button>
-        </div>
-
-        <div v-if="filteredProjects.length" class="studio-project-list">
-          <article
-            v-for="project in filteredProjects"
-            :key="project.id"
-            class="studio-project-item"
-            :class="{ 'is-editing': editingProjectId === project.id }"
-          >
+        <div v-if="customProjects.length" class="studio-project-list">
+          <article v-for="project in customProjects" :key="project.id" class="studio-project-item">
             <div class="studio-project-item__copy">
               <span>{{ project.year }} · {{ project.images.length }} image(s)</span>
-              <strong v-if="editingProjectId === project.id" class="studio-project-item__state">Edition en cours</strong>
               <h3>{{ project.title }}</h3>
               <p>{{ project.description }}</p>
               <small>/project/{{ project.id }}</small>
@@ -584,20 +409,16 @@ async function handleImport(event) {
           </article>
         </div>
 
-        <p v-else-if="customProjects.length" class="studio-empty">
-          Aucun projet ne correspond a cette recherche. Essaie avec le titre, le slug, l annee, le role ou une techno.
-        </p>
-
         <p v-else class="studio-empty">
           Quand tu ajoutes ton premier projet ici, il apparaitra automatiquement sur la page d'accueil et dans son URL detail.
         </p>
 
         <div class="studio-sidebar__footer">
-          <p class="studio-sidebar__eyebrow">foOlio / Footer</p>
+          <p class="studio-sidebar__eyebrow">Studio prive</p>
           <strong>{{ siteProfile.name }}</strong>
           <p>{{ siteProfile.role }} · {{ siteProfile.location }}</p>
-          <a :href="`mailto:${siteProfile.email}`">{{ siteProfile.email }}</a>
-          <span>© {{ currentYear }} foOlio</span>
+          <a href="mailto:hello@foolio.dev">hello@foolio.dev</a>
+          <span>© {{ currentYear }} Mohamed Ali</span>
         </div>
       </aside>
     </section>

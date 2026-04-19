@@ -5,6 +5,44 @@ const loaderVisible = ref(true)
 const cursorText = ref('')
 const cursorTheme = ref('default')
 const transitioning = ref(false)
+const theme = ref('dark')
+
+const THEME_STORAGE_KEY = 'foolio.theme.v1'
+let themeHydrated = false
+
+function resolvePreferredTheme() {
+  if (typeof window === 'undefined') {
+    return 'dark'
+  }
+
+  const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY)
+
+  if (storedTheme === 'light' || storedTheme === 'dark') {
+    return storedTheme
+  }
+
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+}
+
+function applyTheme(nextTheme) {
+  if (typeof document === 'undefined') {
+    return
+  }
+
+  document.documentElement.dataset.theme = nextTheme
+  document.documentElement.style.colorScheme = nextTheme
+}
+
+function hydrateTheme() {
+  if (themeHydrated) {
+    applyTheme(theme.value)
+    return
+  }
+
+  themeHydrated = true
+  theme.value = resolvePreferredTheme()
+  applyTheme(theme.value)
+}
 
 function moveFocusOutsideMenu() {
   if (typeof document === 'undefined') {
@@ -30,7 +68,10 @@ function moveFocusOutsideMenu() {
 }
 
 export function useUiState() {
+  hydrateTheme()
+
   const isOverlayActive = computed(() => menuOpen.value || loaderVisible.value || transitioning.value)
+  const themeLabel = computed(() => (theme.value === 'dark' ? 'Sombre' : 'Clair'))
 
   function openMenu() {
     menuOpen.value = true
@@ -67,12 +108,29 @@ export function useUiState() {
     transitioning.value = value
   }
 
+  function setTheme(value) {
+    const nextTheme = value === 'light' ? 'light' : 'dark'
+
+    theme.value = nextTheme
+    applyTheme(nextTheme)
+
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme)
+    }
+  }
+
+  function toggleTheme() {
+    setTheme(theme.value === 'dark' ? 'light' : 'dark')
+  }
+
   return {
     menuOpen,
     loaderVisible,
     cursorText,
     cursorTheme,
     transitioning,
+    theme,
+    themeLabel,
     isOverlayActive,
     openMenu,
     closeMenu,
@@ -81,5 +139,7 @@ export function useUiState() {
     setCursor,
     clearCursor,
     setTransitioning,
+    setTheme,
+    toggleTheme,
   }
 }

@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { findProjectById, privateStudioPath } from '@/composables/useProjects'
 
-const homeTitle = 'Mohamed Ali | AI dev & concepteur de solutions full-stack'
+const homeTitle = 'Mohamed Ali | Portfolio frontend motion premium'
 let pendingScrollInstruction = null
 
 export function consumePendingScrollInstruction() {
@@ -46,7 +46,7 @@ const router = createRouter({
       name: 'not-found',
       component: () => import('@/views/NotFoundView.vue'),
       meta: {
-        title: '404 | Mohamed Ali',
+        title: 'Introuvable | Mohamed Ali',
       },
     },
   ],

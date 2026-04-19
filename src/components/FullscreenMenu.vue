@@ -1,6 +1,7 @@
 <script setup>
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import MagneticLink from '@/components/MagneticLink.vue'
+import { siteProfile } from '@/data/projects'
 import { gsap } from '@/composables/useGSAP'
 import { useUiState } from '@/composables/useUiState'
 
@@ -12,18 +13,18 @@ let activeTimeline = null
 const navigation = [
   {
     label: 'Accueil',
-    to: '/',
+    to: { path: '/', hash: '#hero' },
     cursor: 'Accueil',
   },
   {
     label: 'Projets',
-    to: { path: '/', hash: '#projects' },
-    cursor: 'Voir',
+    to: { path: '/', hash: '#work' },
+    cursor: 'Projets',
   },
   {
-    label: 'Processus',
-    to: { path: '/', hash: '#process' },
-    cursor: 'Processus',
+    label: 'A propos',
+    to: { path: '/', hash: '#about' },
+    cursor: 'A propos',
   },
   {
     label: 'Contact',
@@ -166,7 +167,11 @@ watch(ui.menuOpen, async (isOpen) => {
         </div>
       </nav>
 
-      <!-- Meta supprimé pour simplification -->
+      <div class="fullscreen-menu__meta">
+        <p data-menu-meta>{{ siteProfile.availability }}</p>
+        <p data-menu-meta>{{ siteProfile.location }}</p>
+        <a data-menu-meta :href="`mailto:${siteProfile.contact.email}`">{{ siteProfile.contact.email }}</a>
+      </div>
     </div>
   </aside>
 </template>

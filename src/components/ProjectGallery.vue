@@ -50,6 +50,10 @@ onMounted(() => {
         return
       }
 
+      if (!imageNodes.value[index]) {
+        return
+      }
+
       gsap.to(imageNodes.value[index], {
         yPercent: -4,
         ease: 'none',
