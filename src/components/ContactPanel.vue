@@ -8,24 +8,6 @@ const root = ref(null)
 const title = ref(null)
 const { add } = useGSAPContext(root)
 const cleanups = []
-const copied = ref(false)
-
-let copyResetTimer = 0
-
-async function copyEmail() {
-  try {
-    await navigator.clipboard.writeText(siteProfile.contact.email)
-    copied.value = true
-
-    window.clearTimeout(copyResetTimer)
-    copyResetTimer = window.setTimeout(() => {
-      copied.value = false
-    }, 1800)
-  }
-  catch {
-    copied.value = false
-  }
-}
 
 onMounted(() => {
   add(() => {
@@ -46,7 +28,6 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  window.clearTimeout(copyResetTimer)
   cleanups.splice(0).forEach((cleanup) => cleanup?.())
 })
 </script>
@@ -60,22 +41,16 @@ onBeforeUnmount(() => {
         <p class="contact-panel__overline" data-contact-item>{{ siteProfile.contact.overline }}</p>
         <h2 ref="title" class="contact-panel__title">{{ siteProfile.contact.title }}</h2>
       </div>
-
-      <MagneticLink class="button button--primary" :href="`mailto:${siteProfile.contact.email}`" cursor="Email" data-contact-item>
-        {{ siteProfile.contact.cta }}
-      </MagneticLink>
     </div>
 
     <div class="contact-panel__grid" data-contact-item>
       <div class="contact-panel__mail">
         <div>
-          <p>{{ siteProfile.contact.email }}</p>
+          <MagneticLink class="button button--primary contact-panel__mail-button" :href="`mailto:${siteProfile.contact.email}`" cursor="Email">
+            {{ siteProfile.contact.email }}
+          </MagneticLink>
           <span>{{ siteProfile.location }}</span>
         </div>
-
-        <button class="button button--ghost" type="button" @click="copyEmail">
-          {{ copied ? 'Adresse copiee' : 'Copier l email' }}
-        </button>
       </div>
 
       <div class="contact-panel__links">

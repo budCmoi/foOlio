@@ -1262,6 +1262,15 @@ figure {
   letter-spacing: -0.03em;
 }
 
+.contact-panel__mail-button {
+  width: fit-content;
+  min-height: 3rem;
+  padding: 0.75rem 1.05rem;
+  font-size: clamp(calc(1rem * 0.72), calc(1.7vw * 0.72), calc(1.2rem * 0.72));
+  letter-spacing: -0.02em;
+  text-transform: none;
+}
+
 .contact-panel__mail span {
   display: block;
   margin-top: 0.35rem;

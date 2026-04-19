@@ -15,7 +15,7 @@ export const siteProfile = {
   workIntro: 'Une selection resserree d\'interfaces construites autour du rythme, de la retenue et de systemes motion prets pour la production.',
   workAppendix: 'Un dossier PDF avec davantage d\'etudes de cas, de specs motion et de vues systeme est disponible sur demande pour les missions serieuses.',
   workCtaLabel: 'Demander le dossier',
-  workCtaHref: 'mailto:hello@foolio.dev?subject=Demande%20de%20dossier%20PDF',
+  workCtaHref: 'mailto:drame.ibou.07@gmail.com?subject=Demande%20de%20dossier%20PDF',
   marquee: [
     'Vision systeme',
     'Choregraphie de scroll',
@@ -79,16 +79,16 @@ export const siteProfile = {
       'Prototypage rapide',
     ],
     ctaLabel: 'Demander le CV',
-    ctaHref: 'mailto:hello@foolio.dev?subject=Demande%20de%20CV',
+    ctaHref: 'mailto:drame.ibou.07@gmail.com?subject=Demande%20de%20CV',
   },
   contact: {
     eyebrow: 'Prendre contact',
     overline: 'Bonjour !',
     title: 'Parlons d\'un projet qui doit vraiment marquer.',
     cta: 'Discutons',
-    email: 'hello@foolio.dev',
+    email: 'drame.ibou.07@gmail.com',
     links: [
-      { label: 'Email', href: 'mailto:hello@foolio.dev' },
+      { label: 'Email', href: 'mailto:drame.ibou.07@gmail.com' },
       { label: 'Projets', href: '/#work' },
       { label: 'A propos', href: '/#about' },
     ],
