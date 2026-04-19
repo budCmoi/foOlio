@@ -9,8 +9,15 @@ import {
   normalizeProject,
   normalizeProjectCollection,
   parseJsonList,
+  parseJsonValue,
   sortProjects,
 } from '../src/lib/project-model.js'
+import {
+  generateProjectDraftWithAi,
+  getOpenAiGenerationMeta,
+  improveProjectSectionWithAi,
+  normalizeGeneratedDraftPayload,
+} from './project-draft-ai.js'
 
 const prisma = new PrismaClient()
 const app = express()
@@ -104,20 +111,38 @@ function toApiProject(record) {
   const results = record.resultEntries?.length
     ? record.resultEntries.map((entry) => entry.value)
     : parseJsonList(record.resultsJson)
+  const tags = parseJsonList(record.tagsJson)
+  const keywords = parseJsonList(record.keywordsJson)
+  const metrics = parseJsonValue(record.metricsJson, [])
+  const imageDetails = parseJsonValue(record.imageDetailsJson, [])
+  const caseStudy = parseJsonValue(record.caseStudyJson, null)
 
   return normalizeProject(
     {
       id: record.id,
       title: record.title,
+      brief: record.brief || '',
+      shortDescription: record.description,
       description: record.description,
+      fullDescription: record.fullDescription || '',
       statement: record.statement,
       year: record.year,
       role: record.role,
       accent: record.accent,
       link: record.link || '',
       images,
+      imageDetails,
       tech,
+      tags,
+      metrics,
       results,
+      category: record.category || '',
+      estimatedDuration: record.estimatedDuration || '',
+      difficulty: record.difficulty || '',
+      metaTitle: record.metaTitle || '',
+      metaDescription: record.metaDescription || '',
+      keywords,
+      caseStudy,
       createdAt: record.createdAt.toISOString(),
     },
     {
@@ -138,12 +163,24 @@ function toPrismaProjectScalarData(project) {
 
   return {
     title: project.title,
+    brief: cleanText(project.brief) || null,
     description: project.description,
+    fullDescription: cleanText(project.fullDescription) || null,
     statement: project.statement,
     year: project.year,
     role: project.role,
     accent: project.accent,
+    category: cleanText(project.category) || null,
+    estimatedDuration: cleanText(project.estimatedDuration) || null,
+    difficulty: cleanText(project.difficulty) || null,
     link: cleanText(project.link) || null,
+    tagsJson: JSON.stringify(Array.isArray(project.tags) ? project.tags : []),
+    metricsJson: JSON.stringify(Array.isArray(project.metrics) ? project.metrics : []),
+    imageDetailsJson: JSON.stringify(Array.isArray(project.imageDetails) ? project.imageDetails : []),
+    metaTitle: cleanText(project.metaTitle) || null,
+    metaDescription: cleanText(project.metaDescription) || null,
+    keywordsJson: JSON.stringify(Array.isArray(project.keywords) ? project.keywords : []),
+    caseStudyJson: JSON.stringify(project.caseStudy || null),
     imagesJson: null,
     techJson: null,
     resultsJson: null,
@@ -257,7 +294,38 @@ app.get('/api/health', async (_request, response) => {
     ok: true,
     storage: 'prisma',
     projectCount,
+    draftGeneration: getOpenAiGenerationMeta(),
   })
+})
+
+app.post('/api/project-drafts/generate', async (request, response) => {
+  const brief = cleanText(request.body?.brief)
+
+  if (!brief) {
+    response.status(400).json({ error: 'Le brief du projet est requis.' })
+    return
+  }
+
+  const variant = Number.parseInt(String(request.body?.variant ?? '0'), 10) || 0
+  const images = Array.isArray(request.body?.images) ? request.body.images : []
+  const generated = await generateProjectDraftWithAi(brief, { images, variant })
+
+  response.json(generated)
+})
+
+app.post('/api/project-drafts/improve-section', async (request, response) => {
+  const sectionKey = cleanText(request.body?.sectionKey)
+
+  if (!sectionKey) {
+    response.status(400).json({ error: 'La section a ameliorer est requise.' })
+    return
+  }
+
+  const variant = Number.parseInt(String(request.body?.variant ?? '1'), 10) || 1
+  const draft = normalizeGeneratedDraftPayload(request.body?.draft || {}, request.body?.draft || {})
+  const improved = await improveProjectSectionWithAi(sectionKey, draft, { variant })
+
+  response.json(improved)
 })
 
 app.get('/api/projects', async (_request, response) => {

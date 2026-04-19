@@ -224,7 +224,7 @@ onBeforeUnmount(() => {
 
           <figure v-if="section.media" class="case-study-figure" data-case-reveal>
             <div class="case-study-figure__frame">
-              <img :src="section.media.image" :alt="section.media.caption" loading="lazy" decoding="async" />
+              <img :src="section.media.image" :alt="section.media.alt || section.media.caption" loading="lazy" decoding="async" />
             </div>
             <figcaption>
               <span>{{ section.media.eyebrow }}</span>
@@ -248,7 +248,7 @@ onBeforeUnmount(() => {
                 data-case-reveal
               >
                 <div class="case-study-figure__frame">
-                  <img :src="entry.image" :alt="entry.caption" loading="lazy" decoding="async" />
+                  <img :src="entry.image" :alt="entry.alt || entry.caption" loading="lazy" decoding="async" />
                 </div>
                 <figcaption>{{ entry.caption }}</figcaption>
               </figure>
@@ -282,7 +282,7 @@ onBeforeUnmount(() => {
               data-case-reveal
             >
               <div class="case-study-figure__frame">
-                <img :src="entry.image" :alt="entry.caption" loading="lazy" decoding="async" />
+                <img :src="entry.image" :alt="entry.alt || entry.caption" loading="lazy" decoding="async" />
               </div>
               <figcaption>{{ entry.caption }}</figcaption>
             </figure>
@@ -337,7 +337,7 @@ onBeforeUnmount(() => {
                   data-case-reveal
                 >
                   <div class="case-study-figure__frame">
-                    <img :src="entry.image" :alt="entry.caption" loading="lazy" decoding="async" />
+                    <img :src="entry.image" :alt="entry.alt || entry.caption" loading="lazy" decoding="async" />
                   </div>
                   <figcaption>{{ entry.caption }}</figcaption>
                 </figure>
@@ -428,7 +428,7 @@ onBeforeUnmount(() => {
           </div>
 
           <div class="project-next__media">
-            <img :src="nextProject.images[0]" :alt="nextProject.title" loading="lazy" decoding="async" />
+            <img :src="nextProject.images[0]" :alt="nextProject.imageDetails?.[0]?.alt || nextProject.title" loading="lazy" decoding="async" />
           </div>
         </RouterLink>
       </section>
@@ -466,7 +466,7 @@ onBeforeUnmount(() => {
         </div>
       </section>
 
-      <ProjectGallery :images="project.images" :title="project.title" />
+      <ProjectGallery :images="project.images" :image-details="project.imageDetails || []" :title="project.title" />
 
       <section class="related-projects page-block">
         <div class="section-heading">

@@ -1803,6 +1803,7 @@ figure {
 }
 
 .studio-toolbar,
+.studio-generator__actions,
 .studio-form__actions,
 .studio-images__toolbar,
 .studio-image-card__actions,
@@ -1825,6 +1826,10 @@ figure {
   display: grid;
   gap: 0.4rem;
   margin-bottom: 1.25rem;
+}
+
+.studio-panel__heading--nested {
+  margin-top: 1.5rem;
 }
 
 .studio-panel__heading h1,
@@ -1869,6 +1874,35 @@ figure {
 .studio-feedback.is-info,
 .studio-feedback.is-error {
   background: var(--surface-soft);
+}
+
+.studio-generator,
+.studio-preview,
+.studio-preview__sections,
+.studio-image-card__fields {
+  display: grid;
+  gap: 1rem;
+}
+
+.studio-preview {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.studio-preview__section {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface-soft);
+}
+
+.studio-section-field__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
 }
 
 .studio-form,

@@ -6,6 +6,7 @@ import {
   normalizeProject,
   normalizeProjectCollection,
   sortProjects,
+  toProjectViewModel,
 } from '@/lib/project-model'
 
 export { createProjectSlug }
@@ -20,6 +21,9 @@ const projectStoragePending = ref(false)
 
 const reservedProjectIds = baseProjects.map((project) => project.id)
 const invalidProjectsListMessage = 'Reponse Prisma invalide. Le serveur n a pas renvoye la liste des projets.'
+const baseProjectViewModels = sortProjects(
+  baseProjects.map((project) => toProjectViewModel(project, project)),
+)
 
 let hydratePromise = null
 
@@ -204,7 +208,7 @@ export function hydrateProjectsStore() {
 
 export const projects = computed(() => {
   hydrateProjectsStore()
-  return sortProjects([...baseProjects, ...customProjects.value])
+  return sortProjects([...baseProjectViewModels, ...customProjects.value])
 })
 
 export function findProjectById(id) {

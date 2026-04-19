@@ -7,6 +7,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  imageDetails: {
+    type: Array,
+    default: () => [],
+  },
   title: {
     type: String,
     default: '',
@@ -76,12 +80,12 @@ onMounted(() => {
         <img
           :ref="setImageRef"
           :src="image"
-          :alt="`${props.title} visuel ${index + 1}`"
+          :alt="props.imageDetails[index]?.alt || `${props.title} visuel ${index + 1}`"
           loading="lazy"
           decoding="async"
         />
       </div>
-      <figcaption>{{ String(index + 1).padStart(2, '0') }} / Étude visuelle</figcaption>
+      <figcaption>{{ props.imageDetails[index]?.caption || `${String(index + 1).padStart(2, '0')} / Etude visuelle` }}</figcaption>
     </figure>
   </section>
 </template>

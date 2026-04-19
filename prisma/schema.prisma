@@ -10,12 +10,24 @@ datasource db {
 model Project {
   id           String          @id
   title        String
+  brief        String?
   description  String
+  fullDescription String?
   statement    String
   year         String
   role         String
   accent       String
+  category     String?
+  estimatedDuration String?
+  difficulty   String?
   link         String?
+  tagsJson     String?
+  metricsJson  String?
+  imageDetailsJson String?
+  metaTitle    String?
+  metaDescription String?
+  keywordsJson String?
+  caseStudyJson String?
   imagesJson   String?
   techJson     String?
   resultsJson  String?

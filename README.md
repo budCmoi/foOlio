@@ -14,10 +14,12 @@ Je m’appelle Mohamed Ali, ingénieur frontend créatif basé à Paris (ou à d
 
 ## Fonctionnalités principales
 - Interface responsive mobile-first
-- Ajout de projets via une interface privée
+- Ajout de projets via une interface privée Prisma
+- Génération de pages projet à partir d un brief court
+- Amélioration de sections via GPT avec fallback local
 - Animations GSAP et transitions fluides
 - Navigation dynamique
-- Stockage local des projets personnalisés
+- Stockage Prisma SQLite des projets personnalisés
 
 ## Structure
 - Hero d’accueil avec message fort
@@ -28,8 +30,20 @@ Je m’appelle Mohamed Ali, ingénieur frontend créatif basé à Paris (ou à d
 ## Installation
 ```bash
 npm install
-npm run dev
+npm run build
+npm start
 ```
+
+Pour le mode studio AI, copier .env.example vers .env puis définir au minimum :
+
+```bash
+DATABASE_URL="file:./dev.db"
+OPENAI_API_KEY=""
+OPENAI_MODEL="gpt-4.1-mini"
+OPENAI_API_BASE="https://api.openai.com/v1"
+```
+
+Si OPENAI_API_KEY est absente, le studio privé garde un générateur local de secours.
 
 ## Déploiement
 ```bash
@@ -38,11 +52,10 @@ npm run build
 
 ### Render
 
-Le projet est prêt pour un déploiement Render en site statique via le fichier render.yaml à la racine.
+Le projet est prêt pour un déploiement Render Node via le fichier render.yaml à la racine.
 
 - Build command : npm ci --include=dev && npm run build
-- Publish directory : dist
-- Réécriture SPA : /* vers /index.html
+- Start command : npm run start
 - Version Node : 22.22.0 sur Render, avec compatibilité déclarée dans package.json
 
 Si le service Render existe déjà, il doit être resynchronisé avec le dépôt ou relancé depuis le dashboard Render pour prendre en compte cette configuration.

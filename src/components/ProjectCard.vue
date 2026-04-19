@@ -134,7 +134,7 @@ onBeforeUnmount(() => {
         <img
           ref="media"
           :src="project.images[0]"
-          :alt="project.title"
+          :alt="project.imageDetails?.[0]?.alt || project.title"
           loading="lazy"
           decoding="async"
         />
