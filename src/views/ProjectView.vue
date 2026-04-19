@@ -428,7 +428,11 @@ onBeforeUnmount(() => {
           </div>
 
           <div class="project-next__media">
-            <img :src="nextProject.images[0]" :alt="nextProject.imageDetails?.[0]?.alt || nextProject.title" loading="lazy" decoding="async" />
+            <img v-if="nextProject.images.length" :src="nextProject.images[0]" :alt="nextProject.imageDetails?.[0]?.alt || nextProject.title" loading="lazy" decoding="async" />
+            <div v-else class="project-media-placeholder" aria-hidden="true">
+              <span>{{ nextProject.category || 'Projet digital' }}</span>
+              <strong>{{ nextProject.title }}</strong>
+            </div>
           </div>
         </RouterLink>
       </section>
@@ -466,7 +470,7 @@ onBeforeUnmount(() => {
         </div>
       </section>
 
-      <ProjectGallery :images="project.images" :image-details="project.imageDetails || []" :title="project.title" />
+      <ProjectGallery v-if="project.images.length" :images="project.images" :image-details="project.imageDetails || []" :title="project.title" />
 
       <section class="related-projects page-block">
         <div class="section-heading">

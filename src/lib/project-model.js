@@ -383,10 +383,6 @@ export function normalizeProject(input, fallback = {}) {
     throw new Error('Le projet doit avoir un titre et un identifiant.')
   }
 
-  if (!images.length) {
-    throw new Error('Ajoute au moins une image.')
-  }
-
   const normalizedProject = {
     id,
     title,

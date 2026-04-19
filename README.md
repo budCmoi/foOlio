@@ -58,8 +58,11 @@ Le projet est prêt pour un déploiement Render Node via le fichier render.yaml 
 - Start command : npm run start:render
 - Health check path : /api/health
 - Version Node : 22.22.0 sur Render, avec compatibilité déclarée dans package.json
+- Persistent disk : monter un disque Render sur /var/data puis utiliser DATABASE_URL="file:/var/data/foolio.db"
 
 Le démarrage Render exécute maintenant `prisma migrate deploy` avant de lancer l API. Cela évite qu un nouveau déploiement parte avec un schéma SQLite en retard par rapport au code serveur.
+
+Le fichier `render.yaml` déclare maintenant ce disque persistent. Sur un service Render déjà créé, il faut attacher ce disque une seule fois dans le dashboard pour empêcher la disparition des projets après redéploiement.
 
 Si le service Render existe déjà, il doit être resynchronisé avec le dépôt ou relancé depuis le dashboard Render pour prendre en compte cette configuration.
 

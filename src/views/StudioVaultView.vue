@@ -545,13 +545,49 @@ async function deleteProject(project) {
   }
 }
 
-async function copyPrivateLink() {
+async function copyTextToClipboard(value) {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(value)
+      return true
+    }
+    catch {
+      // Fall through to a DOM-based fallback when clipboard permissions are blocked.
+    }
+  }
+
+  const textarea = document.createElement('textarea')
+  textarea.value = value
+  textarea.setAttribute('readonly', '')
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  textarea.style.pointerEvents = 'none'
+  document.body.append(textarea)
+  textarea.select()
+  textarea.setSelectionRange(0, textarea.value.length)
+
   try {
-    await navigator.clipboard.writeText(`${window.location.origin}${privateStudioPath}`)
+    return document.execCommand('copy')
+  }
+  finally {
+    textarea.remove()
+  }
+}
+
+async function copyPrivateLink() {
+  const privateLink = `${window.location.origin}${privateStudioPath}`
+
+  try {
+    const copied = await copyTextToClipboard(privateLink)
+
+    if (!copied) {
+      throw new Error('copy-failed')
+    }
+
     showFeedback('success', 'Lien prive copie dans le presse-papiers.')
   }
   catch {
-    showFeedback('error', 'Impossible de copier automatiquement le lien prive.')
+    showFeedback('info', `Copie manuelle si besoin : ${privateLink}`)
   }
 }
 

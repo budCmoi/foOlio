@@ -1146,6 +1146,35 @@ figure {
   object-fit: cover;
 }
 
+.work-card__placeholder,
+.project-media-placeholder {
+  display: grid;
+  align-content: end;
+  gap: 0.55rem;
+  width: 100%;
+  min-height: 100%;
+  padding: 1.2rem;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--project-accent, var(--accent)) 24%, transparent), transparent 42%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-soft) 86%, transparent), var(--surface));
+}
+
+.work-card__placeholder span,
+.project-media-placeholder span {
+  color: var(--muted);
+  font-size: calc(0.72rem * 0.72);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.work-card__placeholder strong,
+.project-media-placeholder strong {
+  max-width: 18ch;
+  font-size: clamp(calc(1.35rem * 0.72), calc(2vw * 0.72), calc(2.1rem * 0.72));
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
 .work-card__overlay {
   position: absolute;
   right: 1rem;
@@ -1659,6 +1688,10 @@ figure {
   width: 100%;
   aspect-ratio: 16 / 10;
   object-fit: cover;
+}
+
+.project-next__media .project-media-placeholder {
+  aspect-ratio: 16 / 10;
 }
 
 .case-study-figure figcaption,

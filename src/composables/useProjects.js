@@ -18,6 +18,7 @@ const projectsHydrated = ref(false)
 const projectStorageMode = ref('prisma')
 const projectStorageError = ref('')
 const projectStoragePending = ref(false)
+const projectCacheStorageKey = 'foolio.custom-projects.v1'
 
 const reservedProjectIds = baseProjects.map((project) => project.id)
 const invalidProjectsListMessage = 'Reponse Prisma invalide. Le serveur n a pas renvoye la liste des projets.'
@@ -26,6 +27,64 @@ const baseProjectViewModels = sortProjects(
 )
 
 let hydratePromise = null
+let cachePrimed = false
+
+function canUseProjectCache() {
+  return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
+}
+
+function readProjectsCache() {
+  if (!canUseProjectCache()) {
+    return []
+  }
+
+  try {
+    const rawValue = window.localStorage.getItem(projectCacheStorageKey)
+
+    if (!rawValue) {
+      return []
+    }
+
+    const parsedValue = JSON.parse(rawValue)
+
+    return Array.isArray(parsedValue)
+      ? normalizeProjectsFromApi(parsedValue)
+      : []
+  }
+  catch {
+    return []
+  }
+}
+
+function writeProjectsCache(entries = []) {
+  if (!canUseProjectCache()) {
+    return
+  }
+
+  try {
+    window.localStorage.setItem(projectCacheStorageKey, JSON.stringify(entries))
+  }
+  catch {
+    // Ignore storage quota and private browsing failures.
+  }
+}
+
+function primeProjectsFromCache() {
+  if (cachePrimed) {
+    return customProjects.value
+  }
+
+  cachePrimed = true
+
+  const cachedProjects = readProjectsCache()
+
+  if (cachedProjects.length) {
+    customProjects.value = cachedProjects
+    projectStorageMode.value = 'cache'
+  }
+
+  return cachedProjects
+}
 
 function buildApiErrorMessage(error, fallbackMessage = 'Prisma indisponible. Verifie que l API tourne bien.') {
   const message = cleanText(error?.message)
@@ -137,6 +196,7 @@ function normalizeProjectsFromApi(entries = []) {
 function replaceProjectsInStore(entries = []) {
   customProjects.value = normalizeProjectsFromApi(entries)
   projectsHydrated.value = true
+  writeProjectsCache(customProjects.value)
   return customProjects.value
 }
 
@@ -161,6 +221,7 @@ function upsertProjectInStore(project, originalId = '') {
     project,
   ])
   projectsHydrated.value = true
+  writeProjectsCache(customProjects.value)
   return project
 }
 
@@ -168,6 +229,8 @@ async function loadProjectsFromApi({ force = false } = {}) {
   if (hydratePromise && !force) {
     return hydratePromise
   }
+
+  const cachedProjects = primeProjectsFromCache()
 
   projectStoragePending.value = true
   projectStorageMode.value = 'prisma'
@@ -180,6 +243,12 @@ async function loadProjectsFromApi({ force = false } = {}) {
     .catch((error) => {
       projectsHydrated.value = true
       projectStorageError.value = buildApiErrorMessage(error)
+
+      if (cachedProjects.length) {
+        projectStorageMode.value = 'cache'
+        return customProjects.value
+      }
+
       throw error
     })
     .finally(() => {
@@ -199,7 +268,13 @@ async function ensureProjectsLoaded() {
 }
 
 export function hydrateProjectsStore() {
-  if (typeof window === 'undefined' || projectsHydrated.value || hydratePromise) {
+  if (typeof window === 'undefined' || hydratePromise) {
+    return
+  }
+
+  primeProjectsFromCache()
+
+  if (projectsHydrated.value) {
     return
   }
 
@@ -297,6 +372,7 @@ export async function removeCustomProject(id) {
 
     customProjects.value = customProjects.value.filter((project) => project.id !== id)
     projectStorageError.value = ''
+    writeProjectsCache(customProjects.value)
   }
   finally {
     projectStoragePending.value = false

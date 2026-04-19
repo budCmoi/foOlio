@@ -17,6 +17,7 @@ const props = defineProps({
 const card = ref(null)
 const media = ref(null)
 const paddedIndex = computed(() => String(props.index + 1).padStart(2, '0'))
+const hasProjectImage = computed(() => Boolean(props.project.images?.[0]))
 const projectMeta = computed(() => `${props.project.client || props.project.title} / ${props.project.year}`)
 const projectTags = computed(() => {
   if (Array.isArray(props.project.tags) && props.project.tags.length) {
@@ -132,12 +133,17 @@ onBeforeUnmount(() => {
 
       <div class="work-card__media">
         <img
+          v-if="hasProjectImage"
           ref="media"
           :src="project.images[0]"
           :alt="project.imageDetails?.[0]?.alt || project.title"
           loading="lazy"
           decoding="async"
         />
+        <div v-else class="work-card__placeholder" aria-hidden="true">
+          <span>{{ project.category || 'Projet digital' }}</span>
+          <strong>{{ project.title }}</strong>
+        </div>
 
         <div class="work-card__overlay" aria-hidden="true">
           <span>Voir le projet</span>
