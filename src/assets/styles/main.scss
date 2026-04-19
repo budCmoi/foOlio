@@ -688,18 +688,38 @@ figure {
 .fullscreen-menu__nav {
   display: grid;
   gap: 0.75rem;
+  justify-items: start;
+}
+
+.fullscreen-menu__link {
+  display: flex;
+  justify-content: flex-start;
 }
 
 .fullscreen-menu__anchor {
   width: fit-content;
-  padding: 0;
+  justify-content: flex-start;
+  min-height: 3.15rem;
+  padding: 0.2rem 0.45rem;
   border: 0;
+  border-radius: 1rem;
   background: none;
   color: var(--text);
   font-family: var(--font-display);
   font-size: clamp(calc(3rem * 0.72), calc(12vw * 0.72), calc(6rem * 0.72));
   line-height: 0.92;
   letter-spacing: -0.05em;
+  text-align: left;
+  transition:
+    transform 0.25s ease,
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+
+.fullscreen-menu__anchor:hover,
+.fullscreen-menu__anchor:focus-visible {
+  background: #ffffff;
+  color: #0c0c0b;
 }
 
 .fullscreen-menu__meta {
@@ -2104,6 +2124,21 @@ figure {
   .hero-right {
     gap: 0.65rem;
   }
+
+  .page--home .hero__scroll {
+    position: absolute;
+    top: 0;
+    right: 0;
+    justify-self: auto;
+    gap: 0.85rem;
+    writing-mode: vertical-rl;
+  }
+
+  .page--home .hero__scroll-line {
+    width: 1px;
+    height: 5.2rem;
+    background: linear-gradient(180deg, transparent, var(--text) 70%, transparent);
+  }
 }
 
 @media (max-width: 640px) {
@@ -2223,12 +2258,15 @@ figure {
   }
 
   .page--home .hero__scroll {
+    top: 0.15rem;
+    right: 0;
     gap: 0.7rem;
     font-size: calc(0.93rem * 0.72);
   }
 
   .page--home .hero__scroll-line {
-    width: 6rem;
+    width: 1px;
+    height: 5rem;
   }
 
   .page--home .marquee-strip__item {
@@ -2241,6 +2279,16 @@ figure {
 
   .page--home .section-heading h2 {
     font-size: clamp(calc(3.15rem * 0.72), calc(14vw * 0.72), calc(4.85rem * 0.72));
+  }
+
+  .fullscreen-menu__nav {
+    justify-items: start;
+  }
+
+  .fullscreen-menu__anchor {
+    width: fit-content;
+    max-width: none;
+    padding-inline: 0.35rem;
   }
 
   .work-card {

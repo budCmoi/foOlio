@@ -81,9 +81,9 @@ onMounted(() => {
         </div>
       </div>
 
-      <button class="hero__scroll" type="button" data-cursor="Defiler" @click="scrollToWork">
+      <button class="hero__scroll" type="button" data-cursor="Scroll" @click="scrollToWork">
         <span class="hero__scroll-line" aria-hidden="true"></span>
-        <span>Defiler</span>
+        <span>Scroll</span>
       </button>
     </div>
   </section>

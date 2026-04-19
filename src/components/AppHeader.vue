@@ -52,8 +52,6 @@ onBeforeUnmount(() => {
       </nav>
 
       <div class="app-header__actions">
-        <span v-if="isProjectRoute" class="app-header__guest">Invite</span>
-
         <MagneticLink v-if="!isHomeRoute" class="app-header__back-link" :to="{ path: '/', hash: '#hero' }" cursor="Accueil">
           Retour a la maison
         </MagneticLink>
