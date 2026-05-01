@@ -914,12 +914,22 @@ figure {
   background: var(--surface);
 }
 
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
 .marquee-strip__track {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  width: 100%;
-  gap: 0.85rem 1rem;
+  flex-wrap: nowrap;
+  width: max-content;
+  gap: 0 1rem;
+  animation: marquee-scroll 28s linear infinite;
+}
+
+.marquee-strip__track:hover {
+  animation-play-state: paused;
 }
 
 .marquee-strip__item {
@@ -2400,9 +2410,6 @@ figure {
     gap: 0.65rem;
   }
 
-  .marquee-strip__track {
-    justify-content: flex-start;
-  }
 }
 
 @media (max-width: 640px) {
