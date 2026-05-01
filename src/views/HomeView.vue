@@ -1,7 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import AboutSection from '@/components/AboutSection.vue'
-import ContactPanel from '@/components/ContactPanel.vue'
 import HeroSection from '@/components/HeroSection.vue'
 import HorizontalShowcase from '@/components/HorizontalShowcase.vue'
 import ProjectCard from '@/components/ProjectCard.vue'
@@ -88,6 +87,5 @@ onMounted(() => {
     </section>
 
     <AboutSection />
-    <ContactPanel />
   </main>
 </template>

@@ -26,11 +26,6 @@ const navigation = [
     to: { path: '/', hash: '#about' },
     cursor: 'A propos',
   },
-  {
-    label: 'Contact',
-    to: { path: '/', hash: '#contact' },
-    cursor: 'Contact',
-  },
 ]
 
 onMounted(() => {

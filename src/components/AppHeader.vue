@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
+import HeaderAvatarAnimation from '@/components/HeaderAvatarAnimation.vue'
 import { siteProfile } from '@/data/projects'
 import { useUiState } from '@/composables/useUiState'
 
@@ -13,7 +14,6 @@ const isProjectRoute = computed(() => route.path.startsWith('/project/'))
 const desktopNavLinks = [
   { label: 'Projets', to: { path: '/', hash: '#work' } },
   { label: 'A propos', to: { path: '/', hash: '#about' } },
-  { label: 'Contact', to: { path: '/', hash: '#contact' } },
 ]
 
 function syncCompactState() {
@@ -34,6 +34,7 @@ onBeforeUnmount(() => {
   <header class="app-header" :class="{ 'is-compact': compact, 'is-open': menuOpen, 'is-secondary': !isHomeRoute }">
     <div class="app-header__inner">
       <RouterLink class="app-header__brand" :to="{ path: '/', hash: '#hero' }" data-cursor="Accueil" @click="ui.closeMenu">
+        <HeaderAvatarAnimation />
         <span class="app-header__brand-text">{{ isProjectRoute ? 'm.ali' : siteProfile.handle }}</span>
       </RouterLink>
 
