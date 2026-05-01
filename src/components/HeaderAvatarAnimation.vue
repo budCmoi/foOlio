@@ -30,12 +30,23 @@ function drawFigure(ctx, cx, cy, s, t) {
   ctx.arc(0, -4.5 * s, 5.2 * s * breathe, 0, Math.PI * 2)
   ctx.fill()
 
-  // Hair — afro-style halo
-  ctx.fillStyle = '#111'
+  // Hoodie — large rounded shape covering head top and sides
+  ctx.fillStyle = '#0d0d0d'
   ctx.beginPath()
-  ctx.arc(0, -5.5 * s, 6.4 * s * breathe, Math.PI * 0.85, Math.PI * 2.15)
+  // Hood back arc (full circle slightly larger than head)
+  ctx.arc(0, -4.5 * s, 7.2 * s * breathe, Math.PI, 0)
+  // Hood front edges drape down over shoulders
+  ctx.lineTo(6.5 * s, 2 * s)
+  ctx.lineTo(-6.5 * s, 2 * s)
   ctx.closePath()
   ctx.fill()
+
+  // Hood brim / rim shadow
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)'
+  ctx.lineWidth = 0.7 * s
+  ctx.beginPath()
+  ctx.arc(0, -4.5 * s, 7.2 * s * breathe, Math.PI * 1.08, Math.PI * 1.92)
+  ctx.stroke()
 
   // Eyes whites
   ctx.fillStyle = 'rgba(255,255,255,0.88)'
@@ -51,15 +62,6 @@ function drawFigure(ctx, cx, cy, s, t) {
   ctx.arc(-1.9 * s + glance, -4.8 * s, 0.6 * s, 0, Math.PI * 2)
   ctx.arc(1.9 * s + glance, -4.8 * s, 0.6 * s, 0, Math.PI * 2)
   ctx.fill()
-
-  // Smile — changes with breathing rhythm
-  const smileAmt = 0.5 + Math.sin(t * 0.8) * 0.18
-  ctx.strokeStyle = 'rgba(255,255,255,0.55)'
-  ctx.lineWidth = 0.9 * s
-  ctx.lineCap = 'round'
-  ctx.beginPath()
-  ctx.arc(0, -3.6 * s, 2.4 * s, 0.3 + smileAmt * 0.2, Math.PI - 0.3 - smileAmt * 0.2)
-  ctx.stroke()
 
   ctx.restore()
 }
