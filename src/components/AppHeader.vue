@@ -12,7 +12,7 @@ const menuOpen = ui.menuOpen
 const isHomeRoute = computed(() => route.path === '/')
 const isProjectRoute = computed(() => route.path.startsWith('/project/'))
 const themeActionLabel = computed(() => (ui.theme.value === 'dark' ? 'Light' : 'Dark'))
-const brandText = computed(() => (isProjectRoute.value ? 'm.ali' : siteProfile.handle))
+const brandText = computed(() => (isProjectRoute.value ? 'ibr.' : siteProfile.handle))
 const desktopNavLinks = [
   { label: 'Work', to: { path: '/', hash: '#work' } },
   { label: 'About', to: { path: '/', hash: '#about' } },
