@@ -24,7 +24,7 @@ onMounted(() => {
 
   gsap.timeline({
     defaults: {
-      ease: 'power3.out',
+      ease: 'power2.out',
     },
     onComplete: () => {
       if (hasCompleted) {
@@ -36,14 +36,14 @@ onMounted(() => {
     },
   })
     .from('.loading-screen__title .word', {
-      yPercent: 115,
+      y: 18,
       autoAlpha: 0,
-      stagger: 0.08,
-      duration: 0.85,
+      stagger: 0.04,
+      duration: 0.42,
     })
     .to(state, {
       value: 100,
-      duration: 1.2,
+      duration: 0.72,
       onUpdate: () => {
         progress.value = Math.round(state.value)
       },
@@ -53,7 +53,7 @@ onMounted(() => {
     }, {
       scaleX: 1,
       transformOrigin: '0% 50%',
-      duration: 1.2,
+      duration: 0.72,
     }, 0.15)
 })
 
@@ -63,9 +63,9 @@ watch(() => props.visible, (isVisible) => {
   }
 
   gsap.to(screen.value, {
-    yPercent: -105,
-    duration: 1.05,
-    ease: 'power4.inOut',
+    autoAlpha: 0,
+    duration: 0.32,
+    ease: 'power2.out',
     pointerEvents: 'none',
   })
 })

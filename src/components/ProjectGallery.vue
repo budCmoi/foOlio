@@ -1,6 +1,6 @@
 <script setup>
 import { onBeforeUpdate, onMounted, ref } from 'vue'
-import { createRevealTrigger, gsap, isMobileViewport, isReducedMotion, useGSAPContext } from '@/composables/useGSAP'
+import { createRevealTrigger, gsap, useGSAPContext } from '@/composables/useGSAP'
 
 const props = defineProps({
   images: {
@@ -19,7 +19,6 @@ const props = defineProps({
 
 const root = ref(null)
 const cards = ref([])
-const imageNodes = ref([])
 const { add } = useGSAPContext(root)
 
 function setCardRef(element) {
@@ -28,45 +27,19 @@ function setCardRef(element) {
   }
 }
 
-function setImageRef(element) {
-  if (element) {
-    imageNodes.value.push(element)
-  }
-}
-
 onBeforeUpdate(() => {
   cards.value = []
-  imageNodes.value = []
 })
 
 onMounted(() => {
   add(() => {
-    cards.value.forEach((card, index) => {
+    cards.value.forEach((card) => {
       gsap.from(card, {
-        y: 48,
+        y: 24,
         autoAlpha: 0,
-        duration: 0.85,
-        ease: 'power3.out',
-        scrollTrigger: createRevealTrigger(card),
-      })
-
-      if (isMobileViewport() || isReducedMotion()) {
-        return
-      }
-
-      if (!imageNodes.value[index]) {
-        return
-      }
-
-      gsap.to(imageNodes.value[index], {
-        yPercent: -4,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: card,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: 1,
-        },
+        duration: 0.42,
+        ease: 'power2.out',
+        scrollTrigger: createRevealTrigger(card, { start: 'top 88%' }),
       })
     })
   })
@@ -78,7 +51,6 @@ onMounted(() => {
     <figure v-for="(image, index) in props.images" :key="`${image}-${index}`" :ref="setCardRef" class="project-gallery__item">
       <div class="project-gallery__frame">
         <img
-          :ref="setImageRef"
           :src="image"
           :alt="props.imageDetails[index]?.alt || `${props.title} visuel ${index + 1}`"
           loading="lazy"

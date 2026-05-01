@@ -1,7 +1,6 @@
 import { onBeforeUnmount } from 'vue'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import SplitType from 'split-type'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -11,7 +10,7 @@ export function createRevealTrigger(trigger, options = {}) {
   return {
     trigger,
     start: 'top 84%',
-    toggleActions: 'play none none reverse',
+    toggleActions: 'play none none none',
     ...options,
   }
 }
@@ -48,35 +47,12 @@ export function splitReveal(target, timeline, options = {}) {
     return () => {}
   }
 
-  const split = new SplitType(target, {
-    types: options.types || 'lines,words',
-    tagName: 'span',
-  })
-
-  const animationTarget = split.lines?.length
-    ? split.lines
-    : split.words?.length
-      ? split.words
-      : []
-
-  if (!animationTarget.length) {
-    return () => split.revert()
-  }
-
-  gsap.set(animationTarget, {
-    yPercent: 105,
-    opacity: 0,
-    transformOrigin: '0% 100%',
-    willChange: 'transform, opacity',
-  })
-
-  timeline.to(animationTarget, {
-    yPercent: 0,
-    opacity: 1,
-    duration: options.duration || 1.1,
-    stagger: options.stagger || 0.08,
-    ease: options.ease || 'power4.out',
+  timeline.from(target, {
+    y: options.y || 18,
+    autoAlpha: 0,
+    duration: options.duration || 0.45,
+    ease: options.ease || 'power2.out',
   }, options.position)
 
-  return () => split.revert()
+  return () => {}
 }

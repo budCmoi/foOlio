@@ -1,21 +1,28 @@
 :root {
-  --bg: #0c0c0b;
-  --bg-elevated: #111110;
-  --surface: rgba(16, 16, 15, 0.9);
-  --surface-strong: rgba(20, 20, 19, 0.96);
-  --surface-soft: rgba(255, 255, 255, 0.02);
-  --text: #f5f5f5;
-  --muted: #9a9a9a;
-  --muted-strong: #bdbdbd;
-  --border: #1f1f1f;
-  --border-strong: rgba(255, 255, 255, 0.12);
-  --accent: #f5f5f5;
-  --accent-contrast: #0c0c0b;
-  --success: #75ff8a;
-  --shadow: 0 24px 58px rgba(0, 0, 0, 0.22), 0 6px 18px rgba(0, 0, 0, 0.1);
-  --radius-sm: 1rem;
-  --radius: 1.6rem;
-  --radius-lg: 2.2rem;
+  --black: #090909;
+  --white: #f4efe4;
+  --green: #55795d;
+  --blue: #335b84;
+  --yellow: #b8942f;
+  --pink: #b86f89;
+  --brown: #6b4c35;
+  --bg: #0d0b0a;
+  --bg-elevated: #151210;
+  --surface: rgba(20, 17, 15, 0.9);
+  --surface-strong: rgba(24, 20, 18, 0.96);
+  --surface-soft: rgba(244, 239, 228, 0.04);
+  --text: #f4efe4;
+  --muted: #a49c91;
+  --muted-strong: #d7d0c6;
+  --border: rgba(244, 239, 228, 0.12);
+  --border-strong: rgba(244, 239, 228, 0.22);
+  --accent: #f4efe4;
+  --accent-contrast: #0d0b0a;
+  --success: #6fa46e;
+  --shadow: 0 24px 58px rgba(5, 4, 3, 0.16), 0 6px 18px rgba(5, 4, 3, 0.08);
+  --radius-sm: 0px;
+  --radius: 0px;
+  --radius-lg: 0px;
   --content-max: min(1480px, calc(100vw - clamp(1.25rem, 4vw, 3rem) * 2));
   --page-gutter: clamp(1.25rem, 3vw, 2rem);
   --font-body: 'Space Grotesk', sans-serif;
@@ -23,24 +30,30 @@
 }
 
 :root[data-theme='light'] {
-  --bg: #f4f1ea;
-  --bg-elevated: #fbf8f1;
-  --surface: rgba(251, 248, 241, 0.9);
-  --surface-strong: rgba(244, 239, 230, 0.94);
-  --surface-soft: rgba(17, 17, 15, 0.03);
-  --text: #11110f;
-  --muted: #6e6b65;
-  --muted-strong: #3d3a36;
-  --border: rgba(17, 17, 15, 0.12);
-  --border-strong: rgba(17, 17, 15, 0.18);
-  --accent: #11110f;
-  --accent-contrast: #f7f3ec;
-  --success: #168a3a;
-  --shadow: 0 24px 54px rgba(44, 36, 26, 0.16), 0 6px 16px rgba(44, 36, 26, 0.08);
+  --bg: #ece6da;
+  --bg-elevated: #f6f0e5;
+  --surface: rgba(246, 240, 229, 0.92);
+  --surface-strong: rgba(239, 231, 219, 0.96);
+  --surface-soft: rgba(13, 11, 10, 0.03);
+  --text: #141210;
+  --muted: #6e655d;
+  --muted-strong: #37312c;
+  --border: rgba(20, 18, 16, 0.12);
+  --border-strong: rgba(20, 18, 16, 0.22);
+  --accent: #141210;
+  --accent-contrast: #f6f0e5;
+  --success: #3f6a48;
+  --shadow: 0 24px 54px rgba(58, 46, 30, 0.1), 0 6px 16px rgba(58, 46, 30, 0.05);
 }
 
 * {
   box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  border-radius: 0 !important;
 }
 
 *::selection {
@@ -71,6 +84,16 @@ body {
 }
 
 img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+
+svg,
+canvas,
+video,
+iframe {
   display: block;
   max-width: 100%;
 }
@@ -116,6 +139,7 @@ figure {
 
 #app {
   position: relative;
+  min-height: 100vh;
 }
 
 .line {
@@ -132,13 +156,28 @@ figure {
   body,
   a,
   button {
-    cursor: none;
+    cursor: auto;
   }
 }
 
 .app-shell {
   position: relative;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+}
+
+.app-shell * {
+  min-width: 0;
+}
+
+.app-shell__content {
+  position: relative;
+  z-index: 1;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .app-shell__backdrop {
@@ -147,32 +186,28 @@ figure {
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 18% 16%, rgba(255, 255, 255, 0.055), transparent 30%),
-    radial-gradient(circle at 82% 8%, rgba(255, 255, 255, 0.04), transparent 26%),
-    radial-gradient(circle at 50% 92%, rgba(255, 255, 255, 0.035), transparent 24%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.012), transparent 24%),
-    linear-gradient(180deg, #111110 0%, #0c0c0b 58%, #090909 100%);
+    radial-gradient(circle at 14% 18%, color-mix(in srgb, var(--yellow) 22%, transparent), transparent 34%),
+    radial-gradient(circle at 84% 16%, color-mix(in srgb, var(--blue) 24%, transparent), transparent 32%),
+    radial-gradient(circle at 50% 88%, color-mix(in srgb, var(--brown) 28%, transparent), transparent 40%),
+    linear-gradient(180deg, color-mix(in srgb, var(--black) 92%, var(--brown) 8%) 0%, color-mix(in srgb, var(--black) 96%, var(--blue) 4%) 100%);
 }
 
 :root[data-theme='light'] .app-shell__backdrop {
   background:
-    radial-gradient(circle at 18% 16%, rgba(17, 17, 15, 0.06), transparent 30%),
-    radial-gradient(circle at 82% 8%, rgba(17, 17, 15, 0.05), transparent 26%),
-    radial-gradient(circle at 50% 92%, rgba(17, 17, 15, 0.035), transparent 24%),
-    linear-gradient(180deg, rgba(17, 17, 15, 0.025), transparent 24%),
-    linear-gradient(180deg, #faf7ef 0%, #f4f1ea 60%, #eee9df 100%);
+    radial-gradient(circle at 14% 18%, color-mix(in srgb, var(--yellow) 18%, transparent), transparent 34%),
+    radial-gradient(circle at 84% 16%, color-mix(in srgb, var(--blue) 16%, transparent), transparent 32%),
+    radial-gradient(circle at 50% 88%, color-mix(in srgb, var(--pink) 14%, transparent), transparent 40%),
+    linear-gradient(180deg, color-mix(in srgb, var(--white) 88%, white 12%) 0%, color-mix(in srgb, var(--white) 96%, var(--brown) 4%) 100%);
 }
 
 .app-shell__backdrop::after {
   content: '';
   position: absolute;
   inset: 0;
-  opacity: 0.32;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-  background-size: 96px 96px;
-  mask-image: radial-gradient(circle at center, black 45%, transparent 90%);
+  opacity: 0.12;
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 112px 100%;
+  mask-image: linear-gradient(180deg, transparent, black 14%, black 86%, transparent);
 }
 
 :root[data-theme='light'] .app-shell__backdrop::after {
@@ -194,14 +229,12 @@ figure {
   bottom: 0;
   width: 55%;
   background:
-    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.055), transparent 32%),
-    linear-gradient(180deg, rgba(16, 16, 15, 0.96), rgba(10, 10, 10, 0.98));
+    linear-gradient(180deg, color-mix(in srgb, var(--black) 88%, var(--brown) 12%), color-mix(in srgb, var(--black) 94%, var(--blue) 6%));
 }
 
 :root[data-theme='light'] .route-transition__panel {
   background:
-    radial-gradient(circle at 20% 20%, rgba(17, 17, 15, 0.05), transparent 32%),
-    linear-gradient(180deg, rgba(250, 247, 239, 0.96), rgba(240, 235, 225, 0.98));
+    linear-gradient(180deg, color-mix(in srgb, var(--white) 92%, var(--yellow) 8%), color-mix(in srgb, var(--white) 88%, var(--blue) 12%));
 }
 
 .route-transition__panel--left {
@@ -221,9 +254,7 @@ figure {
   transform: translate(-50%, -50%);
   padding: 0.95rem 1.15rem;
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
   background: var(--surface);
-  backdrop-filter: blur(18px);
   color: var(--text);
   font-size: calc(0.72rem * 0.72);
   font-weight: 700;
@@ -295,19 +326,17 @@ figure {
   min-height: 3.4rem;
   padding: 0.9rem 1.35rem;
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
   background: transparent;
   color: var(--text);
   font-size: calc(0.95rem * 0.72);
   font-weight: 500;
   letter-spacing: -0.02em;
   transition:
-    transform 0.25s ease,
     border-color 0.25s ease,
     background-color 0.25s ease,
     color 0.25s ease,
-    box-shadow 0.25s ease;
-  box-shadow: var(--shadow);
+    box-shadow 0.25s ease,
+    opacity 0.25s ease;
 }
 
 .magnetic-link__inner {
@@ -319,7 +348,7 @@ figure {
 
 .button:hover,
 .magnetic-link:hover {
-  transform: translateY(-2px);
+  border-color: var(--text);
 }
 
 .button--primary {
@@ -352,7 +381,6 @@ figure {
   min-height: 0.95rem;
   padding: 0.35rem;
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
   background: rgba(255, 255, 255, 0.06);
   color: var(--text);
   pointer-events: none;
@@ -489,9 +517,7 @@ figure {
   align-items: center;
   gap: 1rem;
   border: 1px solid var(--border);
-  border-radius: 999px;
-  background: rgba(12, 12, 11, 0.72);
-  backdrop-filter: blur(18px);
+  background: color-mix(in srgb, var(--surface-strong) 92%, transparent);
   box-shadow: var(--shadow);
   pointer-events: auto;
 }
@@ -532,14 +558,12 @@ figure {
   min-height: 2.7rem;
   padding: 0.52rem 0.78rem;
   border: 1px solid transparent;
-  border-radius: 999px;
   color: var(--muted);
   font-size: calc(0.84rem * 0.72);
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  transition: transform 0.25s ease, border-color 0.25s ease, background-color 0.25s ease, color 0.25s ease;
-  box-shadow: var(--shadow);
+  transition: border-color 0.25s ease, background-color 0.25s ease, color 0.25s ease;
 }
 
 .app-header__nav-link:hover,
@@ -548,7 +572,6 @@ figure {
   color: var(--text);
   border-color: var(--border-strong);
   background: rgba(255, 255, 255, 0.03);
-  transform: translateY(-2px);
 }
 
 :root[data-theme='light'] .app-header__nav-link:hover,
@@ -573,7 +596,6 @@ figure {
   min-height: 2.2rem;
   padding: 0.35rem 0.72rem;
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
   background: var(--surface-soft);
   color: var(--muted-strong);
   font-size: calc(0.72rem * 0.72);
@@ -592,15 +614,13 @@ figure {
   min-height: 3rem;
   padding: 0.7rem 0.95rem;
   border: 1px solid transparent;
-  border-radius: 999px;
   background: transparent;
   color: var(--text);
   font-size: calc(0.84rem * 0.72);
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  transition: transform 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
-  box-shadow: var(--shadow);
+  transition: border-color 0.25s ease, background-color 0.25s ease, color 0.25s ease;
 }
 
 .theme-toggle,
@@ -624,14 +644,13 @@ figure {
 .theme-toggle:hover,
 .menu-button:hover,
 .app-header__back-link:hover {
-  transform: translateY(-2px);
+  border-color: var(--text);
 }
 
 .theme-toggle__icon {
   width: 1rem;
   height: 1rem;
   border: 1px solid currentColor;
-  border-radius: 50%;
   background: linear-gradient(90deg, currentColor 50%, transparent 50%);
 }
 
@@ -677,8 +696,7 @@ figure {
   inset: 0;
   z-index: 25;
   padding: 7.25rem var(--page-gutter) 1.5rem;
-  background: rgba(7, 7, 7, 0.8);
-  backdrop-filter: blur(16px);
+  background: color-mix(in srgb, var(--black) 84%, var(--blue) 16%);
 }
 
 :root[data-theme='light'] .fullscreen-menu {
@@ -744,6 +762,11 @@ figure {
   display: grid;
   align-content: space-between;
   gap: clamp(1.4rem, 3vw, 2.35rem);
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--brown) 16%, var(--surface-strong) 84%) 0%, color-mix(in srgb, var(--black) 88%, var(--yellow) 12%) 100%);
 }
 
 .hero__eyebrow {
@@ -808,10 +831,8 @@ figure {
   min-height: 1.75rem;
   padding: 0.24rem 0.58rem;
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--bg-elevated) 84%, transparent);
-  backdrop-filter: blur(16px);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+  background: color-mix(in srgb, var(--brown) 12%, var(--surface) 88%);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
   color: var(--text);
   font-size: calc(0.72rem * 0.72);
   font-weight: 500;
@@ -822,38 +843,21 @@ figure {
 
 .pill.active {
   padding-left: 0.5rem;
-  border-color: color-mix(in srgb, var(--success) 38%, var(--border-strong));
-  background: color-mix(in srgb, var(--success) 12%, var(--bg-elevated) 88%);
+  border-color: color-mix(in srgb, var(--success) 48%, var(--border-strong));
+  background: color-mix(in srgb, var(--green) 18%, var(--surface) 82%);
   color: var(--success);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--success) 22%, transparent), 0 10px 24px rgba(0, 0, 0, 0.14);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 18%, transparent);
 }
 
 .pill-dot {
   width: 0.34rem;
   height: 0.34rem;
   flex: 0 0 auto;
-  border-radius: 50%;
   background: currentColor;
 }
 
 .pill-label {
   display: inline-block;
-}
-
-.pill.active .pill-dot,
-.pill.active .pill-label {
-  animation: availability-blink 1.15s ease-in-out infinite;
-}
-
-@keyframes availability-blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.42;
-  }
 }
 
 .hero__scroll {
@@ -874,33 +878,37 @@ figure {
 .hero__scroll-line {
   width: 1px;
   height: 5.75rem;
-  background: linear-gradient(180deg, transparent, var(--text) 70%, transparent);
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--yellow) 72%, var(--text) 28%) 70%, transparent);
 }
 
 .marquee-strip {
-  margin-inline: calc(var(--page-gutter) * -1);
+  margin-inline: 0;
 }
 
 .marquee-strip__viewport {
   overflow: hidden;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  padding: 1rem 0;
+  padding: 1rem 1.1rem;
+  background: color-mix(in srgb, var(--blue) 14%, var(--surface-strong) 86%);
 }
 
 .marquee-strip__track {
   display: flex;
   align-items: center;
-  width: max-content;
-  gap: 1.25rem;
-  will-change: transform;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 0.85rem 1rem;
 }
 
 .marquee-strip__item {
   display: inline-flex;
   align-items: center;
   gap: 1.25rem;
-  color: var(--muted);
+  padding: 0.55rem 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--blue) 36%, var(--border));
+  background: color-mix(in srgb, var(--white) 4%, transparent);
+  color: var(--white);
   font-size: calc(0.95rem * 0.72);
   font-weight: 500;
   letter-spacing: 0.12em;
@@ -910,7 +918,7 @@ figure {
 
 .marquee-strip__item i {
   font-style: normal;
-  color: var(--text);
+  color: var(--yellow);
 }
 
 .page--home .section-heading h2 {
@@ -943,17 +951,14 @@ figure {
   gap: 0.9rem;
   padding: clamp(1.4rem, 2.4vw, 2rem);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
   background:
-    radial-gradient(circle at top right, rgba(255, 255, 255, 0.05), transparent 34%),
-    linear-gradient(180deg, rgba(15, 15, 14, 0.86), rgba(12, 12, 11, 0.94));
+    linear-gradient(180deg, color-mix(in srgb, var(--blue) 10%, var(--surface-strong) 90%), color-mix(in srgb, var(--surface) 94%, var(--black) 6%));
   box-shadow: var(--shadow);
 }
 
 :root[data-theme='light'] .work-empty {
   background:
-    radial-gradient(circle at top right, rgba(17, 17, 15, 0.05), transparent 34%),
-    linear-gradient(180deg, rgba(251, 248, 241, 0.94), rgba(241, 236, 227, 0.9));
+    linear-gradient(180deg, color-mix(in srgb, var(--white) 92%, var(--blue) 8%), color-mix(in srgb, var(--white) 88%, var(--brown) 12%));
 }
 
 .work-empty__eyebrow {
@@ -975,6 +980,15 @@ figure {
   margin: 0;
   color: var(--muted);
   line-height: 1.65;
+}
+
+.work-section {
+  padding: clamp(1.4rem, 3vw, 2rem);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--blue) 8%, transparent), transparent 100%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-strong) 88%, var(--blue) 12%), color-mix(in srgb, var(--surface) 94%, transparent));
 }
 
 .work-section__appendix {
@@ -1014,13 +1028,10 @@ figure {
   min-height: 36rem;
   padding: clamp(1.2rem, 2.2vw, 1.5rem);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
   background:
-    radial-gradient(circle at top right, rgba(255, 255, 255, 0.05), transparent 34%),
-    linear-gradient(180deg, rgba(15, 15, 14, 0.86), rgba(12, 12, 11, 0.94));
+    linear-gradient(180deg, color-mix(in srgb, var(--project-accent, var(--blue)) 10%, var(--surface-strong) 90%), color-mix(in srgb, var(--black) 90%, var(--project-accent, var(--blue)) 10%));
   box-shadow: var(--shadow);
   overflow: hidden;
-  transform-style: preserve-3d;
 }
 
 :root[data-theme='light'] .work-card {
@@ -1032,13 +1043,14 @@ figure {
 .work-card::before {
   content: '';
   position: absolute;
-  inset: auto -12% -22% auto;
-  width: 12rem;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--project-accent, rgba(255, 255, 255, 0.08));
-  opacity: 0.16;
-  filter: blur(48px);
+  inset: 0 auto 0 0;
+  width: 1px;
+  background: color-mix(in srgb, var(--project-accent, var(--blue)) 65%, transparent);
+  opacity: 1;
+}
+
+.work-card:hover {
+  border-color: color-mix(in srgb, var(--project-accent, var(--blue)) 32%, var(--border-strong));
 }
 
 .work-card__copy {
@@ -1094,8 +1106,7 @@ figure {
   min-height: 2.5rem;
   padding: 0.45rem 0.9rem;
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--surface-strong) 86%, transparent);
   color: var(--text);
   font-size: calc(0.86rem * 0.72);
   box-shadow: var(--shadow);
@@ -1133,17 +1144,20 @@ figure {
 
 .work-card__media {
   position: relative;
+  display: grid;
+  place-items: center;
+  padding: clamp(0.65rem, 1.5vw, 0.9rem);
   overflow: hidden;
-  border-radius: calc(var(--radius-lg) - 0.45rem);
+  border: 1px solid color-mix(in srgb, var(--project-accent, var(--blue)) 24%, var(--border));
   min-height: 100%;
-  background: var(--surface-soft);
-  box-shadow: var(--shadow);
+  background: color-mix(in srgb, var(--surface-strong) 82%, var(--project-accent, var(--blue)) 18%);
 }
 
 .work-card__media img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background: color-mix(in srgb, var(--black) 84%, var(--project-accent, var(--blue)) 16%);
 }
 
 .work-card__placeholder,
@@ -1184,20 +1198,27 @@ figure {
   gap: 0.6rem;
   min-height: 2.9rem;
   padding: 0.65rem 1rem;
-  border-radius: 999px;
-  background: rgba(12, 12, 11, 0.72);
+  border: 1px solid color-mix(in srgb, var(--project-accent, var(--blue)) 24%, var(--border-strong));
+  background: color-mix(in srgb, var(--black) 74%, var(--project-accent, var(--blue)) 26%);
   color: #f5f5f5;
   font-size: calc(0.8rem * 0.72);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  opacity: 1;
+  transition: border-color 0.25s ease, background-color 0.25s ease;
 }
 
 .work-card:hover .work-card__overlay {
-  opacity: 1;
-  transform: translateY(0);
+  border-color: color-mix(in srgb, var(--project-accent, var(--blue)) 40%, var(--border-strong));
+}
+
+.about-section {
+  padding: clamp(1.4rem, 3vw, 2rem);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--pink) 10%, transparent), transparent 100%),
+    linear-gradient(135deg, color-mix(in srgb, var(--surface-strong) 90%, var(--brown) 10%), color-mix(in srgb, var(--surface) 92%, var(--pink) 8%));
 }
 
 .about-section__layout {
@@ -1242,6 +1263,18 @@ figure {
   display: grid;
   gap: 1.15rem;
   align-content: start;
+}
+
+.about-card:nth-child(1) {
+  background: color-mix(in srgb, var(--surface) 84%, var(--brown) 16%);
+}
+
+.about-card:nth-child(2) {
+  background: color-mix(in srgb, var(--surface) 86%, var(--pink) 14%);
+}
+
+.about-card:nth-child(3) {
+  background: color-mix(in srgb, var(--surface) 88%, var(--yellow) 12%);
 }
 
 .about-card h3 {
@@ -1300,6 +1333,10 @@ figure {
 .contact-panel {
   display: grid;
   gap: 1.5rem;
+  padding: clamp(1.4rem, 3vw, 2rem);
+  border: 1px solid var(--border);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--green) 15%, var(--surface-strong) 85%), color-mix(in srgb, var(--black) 88%, var(--green) 12%));
 }
 
 .contact-panel__hero {
@@ -1372,12 +1409,20 @@ figure {
 }
 
 .contact-panel__links a {
-  color: var(--muted);
-  transition: color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--border-strong);
+  background: color-mix(in srgb, var(--green) 10%, transparent);
+  color: var(--muted-strong);
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .contact-panel__links a:hover {
   color: var(--text);
+  border-color: color-mix(in srgb, var(--green) 48%, var(--border-strong));
+  background: color-mix(in srgb, var(--green) 16%, transparent);
 }
 
 .contact-panel__footer {
@@ -1644,8 +1689,7 @@ figure {
   min-height: 2.25rem;
   padding: 0.4rem 0.8rem;
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--surface-strong) 86%, transparent);
   color: var(--text);
   font-size: calc(0.8rem * 0.72);
   box-shadow: var(--shadow);
@@ -1675,9 +1719,11 @@ figure {
 .project-gallery__frame,
 .project-next__media {
   position: relative;
+  display: grid;
+  place-items: center;
+  padding: clamp(0.55rem, 1.4vw, 0.85rem);
   overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
   background: var(--surface);
   box-shadow: var(--shadow);
 }
@@ -1687,7 +1733,8 @@ figure {
 .project-next__media img {
   width: 100%;
   aspect-ratio: 16 / 10;
-  object-fit: cover;
+  object-fit: contain;
+  background: color-mix(in srgb, var(--black) 88%, var(--blue) 12%);
 }
 
 .project-next__media .project-media-placeholder {
@@ -1818,7 +1865,6 @@ figure {
   left: 0;
   width: 0.42rem;
   height: 0.42rem;
-  border-radius: 50%;
   background: currentColor;
   opacity: 0.48;
 }
@@ -1852,7 +1898,7 @@ figure {
 }
 
 .project-next__card:hover {
-  transform: translateY(-4px);
+  transform: none;
   border-color: var(--border-strong);
 }
 
@@ -1954,7 +2000,6 @@ figure {
   margin-bottom: 1rem;
   padding: 0.9rem 1rem;
   border: 1px solid var(--border-strong);
-  border-radius: 1rem;
   box-shadow: var(--shadow);
 }
 
@@ -2030,7 +2075,6 @@ figure {
   width: 100%;
   padding: 0.95rem 1rem;
   border: 1px solid var(--border);
-  border-radius: 1rem;
   background: transparent;
   outline: none;
   transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
@@ -2087,7 +2131,6 @@ figure {
 
 .studio-image-card__preview {
   overflow: hidden;
-  border-radius: 1rem;
   background: var(--surface-soft);
   box-shadow: var(--shadow);
 }
@@ -2096,7 +2139,8 @@ figure {
   width: 100%;
   height: 100%;
   min-height: 9rem;
-  object-fit: cover;
+  object-fit: contain;
+  background: color-mix(in srgb, var(--black) 86%, var(--blue) 14%);
 }
 
 .studio-image-card__body,
@@ -2150,7 +2194,26 @@ figure {
     box-shadow 0.35s ease;
 }
 
+.app-header__nav-link:hover,
+.app-header__nav-link.router-link-active,
+.app-header__nav-link.router-link-exact-active,
+.app-header__back-link:hover,
+.theme-toggle:hover,
+.menu-button:hover,
+.button:hover,
+.magnetic-link:hover,
+.project-next__card:hover {
+  transform: none;
+}
+
 @media (max-width: 1120px) {
+  .hero,
+  .work-section,
+  .about-section,
+  .contact-panel {
+    padding: clamp(1.2rem, 3.4vw, 1.6rem);
+  }
+
   .about-section__layout,
   .studio-grid,
   .work-card {
@@ -2201,7 +2264,25 @@ figure {
 
 @media (max-width: 920px) {
   .app-header__inner {
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.8rem;
+  }
+
+  .app-header__nav {
+    display: none;
+  }
+
+  .menu-button {
+    display: inline-flex;
+  }
+
+  .app-header__brand {
+    grid-column: 1;
+  }
+
+  .app-header__actions {
+    grid-column: 2;
+    margin-left: 0;
   }
 
   .section-heading,
@@ -2219,6 +2300,14 @@ figure {
 
   .project-hero__facts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hero__bottom {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-right {
+    justify-items: start;
   }
 
 }
@@ -2277,20 +2366,8 @@ figure {
     gap: 0.65rem;
   }
 
-  .page--home .hero__scroll {
-    position: absolute;
-    top: auto;
-    bottom: 0;
-    right: 0;
-    justify-self: auto;
-    gap: 0.85rem;
-    writing-mode: vertical-rl;
-  }
-
-  .page--home .hero__scroll-line {
-    width: 1px;
-    height: 5.2rem;
-    background: linear-gradient(180deg, transparent, var(--text) 70%, transparent);
+  .marquee-strip__track {
+    justify-content: flex-start;
   }
 }
 
@@ -2324,6 +2401,14 @@ figure {
 
   .app-header__actions {
     gap: 0.45rem;
+  }
+
+  .app-header__guest {
+    display: none;
+  }
+
+  .theme-toggle span:last-child {
+    display: none;
   }
 
   .app-header__back-link,
@@ -2463,6 +2548,15 @@ figure {
 
   .work-card {
     min-height: auto;
+  }
+
+  .work-card__media {
+    min-height: clamp(15rem, 52vw, 20rem);
+  }
+
+  .work-card__overlay {
+    right: 0.75rem;
+    bottom: 0.75rem;
   }
 
   .work-card__headline h3,

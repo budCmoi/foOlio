@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { siteProfile } from '@/data/projects'
-import { gsap, useGSAPContext } from '@/composables/useGSAP'
+import { gsap, isReducedMotion, useGSAPContext } from '@/composables/useGSAP'
 import { scrollToTarget } from '@/composables/useLenis'
 
 const root = ref(null)
@@ -12,44 +12,38 @@ function scrollToWork() {
 }
 
 onMounted(() => {
+  if (isReducedMotion()) {
+    return
+  }
+
   add(() => {
     gsap.set('.hero__title-line', {
-      yPercent: 112,
+      yPercent: 42,
       autoAlpha: 0,
     })
 
     gsap.timeline({
       defaults: {
-        ease: 'power3.out',
+        ease: 'power2.out',
       },
     })
       .from('.hero__eyebrow', {
-        y: 22,
+        y: 14,
         autoAlpha: 0,
-        duration: 0.58,
+        duration: 0.3,
       })
       .to('.hero__title-line', {
         yPercent: 0,
         autoAlpha: 1,
-        stagger: 0.12,
-        duration: 1.05,
-      }, 0.06)
-      .from('.hero__lead', {
-        y: 36,
-        autoAlpha: 0,
-        duration: 0.72,
-      }, 0.26)
-      .from('.hero-pill', {
-        y: 26,
-        autoAlpha: 0,
-        stagger: 0.08,
-        duration: 0.56,
-      }, 0.38)
-      .from('.hero__scroll', {
-        y: 22,
-        autoAlpha: 0,
+        stagger: 0.05,
         duration: 0.48,
-      }, 0.46)
+      }, 0.06)
+      .from('.hero__lead, .hero-pill, .hero__scroll', {
+        y: 18,
+        autoAlpha: 0,
+        stagger: 0.04,
+        duration: 0.34,
+      }, 0.14)
   })
 })
 </script>

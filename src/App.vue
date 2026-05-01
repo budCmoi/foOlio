@@ -2,7 +2,6 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
-import CustomCursor from '@/components/CustomCursor.vue'
 import FullscreenMenu from '@/components/FullscreenMenu.vue'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import SiteFooter from '@/components/SiteFooter.vue'
@@ -18,7 +17,6 @@ const { startLenis, stopLenis } = useLenis()
 const transitionVeil = ref(null)
 const viewKey = computed(() => route.path)
 const loaderVisible = ui.loaderVisible
-const showSiteFooter = computed(() => route.name !== 'home')
 
 const transitionLabel = computed(() => {
   if (route.name === 'project' && typeof route.params.id === 'string') {
@@ -111,11 +109,10 @@ function setTransitionVeilState() {
     autoAlpha: 0,
     pointerEvents: 'none',
   })
-  gsap.set(panels[0], { xPercent: -106 })
-  gsap.set(panels[1], { xPercent: 106 })
+  gsap.set(panels, { autoAlpha: 0 })
   gsap.set(label, {
     autoAlpha: 0,
-    y: 18,
+    y: 12,
   })
 }
 
@@ -133,20 +130,17 @@ function createVeilInTimeline() {
 
   timeline
     .set(transitionVeil.value, { autoAlpha: 1 })
-    .to(panels[0], {
-      xPercent: 0,
-      duration: 0.82,
+    .to(panels, {
+      autoAlpha: 1,
+      duration: 0.18,
+      stagger: 0.04,
     }, 0)
-    .to(panels[1], {
-      xPercent: 0,
-      duration: 0.82,
-    }, 0.08)
     .to(label, {
       autoAlpha: 1,
       y: 0,
-      duration: 0.28,
+      duration: 0.18,
       ease: 'power2.out',
-    }, 0.24)
+    }, 0.05)
 
   return timeline
 }
@@ -166,19 +160,16 @@ function createVeilOutTimeline() {
   timeline
     .to(label, {
       autoAlpha: 0,
-      y: -18,
-      duration: 0.24,
+      y: -8,
+      duration: 0.14,
       ease: 'power2.in',
     }, 0)
-    .to(panels[0], {
-      xPercent: -106,
-      duration: 0.96,
-    }, 0.1)
-    .to(panels[1], {
-      xPercent: 106,
-      duration: 0.96,
-    }, 0.18)
-    .set(transitionVeil.value, { autoAlpha: 0 }, '>-0.06')
+    .to(panels, {
+      autoAlpha: 0,
+      duration: 0.18,
+      stagger: 0.03,
+    }, 0.06)
+    .set(transitionVeil.value, { autoAlpha: 0 }, '>')
 
   return timeline
 }
@@ -187,8 +178,7 @@ function onBeforeEnter(element) {
   ui.setTransitioning(true)
   gsap.set(element, {
     autoAlpha: 0,
-    y: 36,
-    clipPath: 'inset(0% 0% 12% 0% round 1.5rem)',
+    y: 20,
   })
 }
 
@@ -209,18 +199,17 @@ function onEnter(element, done) {
     .to(element, {
       autoAlpha: 1,
       y: 0,
-      clipPath: 'inset(0% 0% 0% 0% round 0rem)',
-      duration: 1.1,
-    }, 0.18)
+      duration: 0.48,
+    }, 0.05)
 
   if (pageIntroNodes.length) {
     gsap.from(pageIntroNodes, {
-      y: 28,
+      y: 18,
       autoAlpha: 0,
-      stagger: 0.05,
-      duration: 0.7,
-      delay: 0.48,
-      ease: 'power3.out',
+      stagger: 0.04,
+      duration: 0.34,
+      delay: 0.1,
+      ease: 'power2.out',
     })
   }
 }
@@ -230,16 +219,16 @@ function onLeave(element, done) {
 
   gsap.timeline({
     defaults: {
-      ease: 'power2.inOut',
+      ease: 'power2.out',
     },
     onComplete: done,
   })
     .add(createVeilInTimeline(), 0)
     .to(element, {
       autoAlpha: 0,
-      y: -24,
-      duration: 0.44,
-    }, 0.24)
+      y: -12,
+      duration: 0.18,
+    }, 0.06)
 }
 </script>
 
@@ -252,15 +241,16 @@ function onLeave(element, done) {
       <p class="route-transition__label">{{ transitionLabel }}</p>
     </div>
     <LoadingScreen :visible="loaderVisible" @complete="ui.completeLoading" />
-    <CustomCursor />
     <AppHeader />
     <FullscreenMenu />
 
-    <RouterView v-slot="{ Component }">
-      <Transition mode="out-in" @before-enter="onBeforeEnter" @enter="onEnter" @leave="onLeave">
-        <component :is="Component" :key="viewKey" />
-      </Transition>
-    </RouterView>
-    <SiteFooter v-if="showSiteFooter" />
+    <div class="app-shell__content">
+      <RouterView v-slot="{ Component }">
+        <Transition mode="out-in" @before-enter="onBeforeEnter" @enter="onEnter" @leave="onLeave">
+          <component :is="Component" :key="viewKey" />
+        </Transition>
+      </RouterView>
+      <SiteFooter />
+    </div>
   </div>
 </template>

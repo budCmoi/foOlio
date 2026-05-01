@@ -1,7 +1,6 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import { gsap, isMobileViewport, isReducedMotion } from '@/composables/useGSAP'
 
 const props = defineProps({
   project: {
@@ -14,8 +13,6 @@ const props = defineProps({
   },
 })
 
-const card = ref(null)
-const media = ref(null)
 const paddedIndex = computed(() => String(props.index + 1).padStart(2, '0'))
 const hasProjectImage = computed(() => Boolean(props.project.images?.[0]))
 const projectMeta = computed(() => `${props.project.client || props.project.title} / ${props.project.year}`)
@@ -36,73 +33,11 @@ const projectMetrics = computed(() => {
     label: entry,
   }))
 })
-
-let onMove = null
-let onLeave = null
-
-onMounted(() => {
-  if (!card.value || !media.value || isMobileViewport() || isReducedMotion()) {
-    return
-  }
-
-  onMove = (event) => {
-    const bounds = card.value.getBoundingClientRect()
-    const x = (event.clientX - bounds.left) / bounds.width - 0.5
-    const y = (event.clientY - bounds.top) / bounds.height - 0.5
-
-    gsap.to(card.value, {
-      rotateY: x * 6,
-      rotateX: y * -5,
-      y: -6,
-      duration: 0.35,
-      ease: 'power2.out',
-      transformPerspective: 1200,
-      transformOrigin: 'center center',
-    })
-
-    gsap.to(media.value, {
-      x: x * 18,
-      y: y * 18,
-      scaleX: 1.08,
-      scaleY: 1.08,
-      duration: 0.42,
-      ease: 'power3.out',
-    })
-  }
-
-  onLeave = () => {
-    gsap.to(card.value, {
-      rotateX: 0,
-      rotateY: 0,
-      y: 0,
-      duration: 0.45,
-      ease: 'power3.out',
-    })
-
-    gsap.to(media.value, {
-      x: 0,
-      y: 0,
-      scaleX: 1,
-      scaleY: 1,
-      duration: 0.45,
-      ease: 'power3.out',
-    })
-  }
-
-  card.value.addEventListener('pointermove', onMove)
-  card.value.addEventListener('pointerleave', onLeave)
-})
-
-onBeforeUnmount(() => {
-  card.value?.removeEventListener('pointermove', onMove)
-  card.value?.removeEventListener('pointerleave', onLeave)
-})
 </script>
 
 <template>
   <RouterLink :to="`/project/${project.id}`" custom v-slot="{ href, navigate }">
     <a
-      ref="card"
       class="project-card work-card"
       :href="href"
       :style="{ '--project-accent': project.accent }"
@@ -134,7 +69,6 @@ onBeforeUnmount(() => {
       <div class="work-card__media">
         <img
           v-if="hasProjectImage"
-          ref="media"
           :src="project.images[0]"
           :alt="project.imageDetails?.[0]?.alt || project.title"
           loading="lazy"
