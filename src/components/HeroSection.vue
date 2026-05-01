@@ -50,9 +50,9 @@ onMounted(() => {
 
 <template>
   <section id="hero" ref="root" class="hero page-block" data-page-intro>
-    <p class="hero__eyebrow">{{ siteProfile.role }}</p>
+    <p class="hero__eyebrow">{{ siteProfile.roleCaps || siteProfile.role }}</p>
 
-    <h1 class="hero__title" aria-label="Mohamed Ali">
+    <h1 class="hero__title" :aria-label="siteProfile.name">
       <span v-for="line in siteProfile.headline" :key="line" class="hero__title-wrap">
         <span class="hero__title-line">{{ line }}</span>
       </span>
@@ -65,20 +65,20 @@ onMounted(() => {
 
       <div class="hero-right">
         <div
-            v-for="pill in siteProfile.heroPills"
-            :key="pill.label"
-            class="pill hero-pill"
-            :class="pill.tone ? pill.tone : ''"
-          >
+          v-for="pill in siteProfile.heroPills"
+          :key="pill.label"
+          class="pill hero-pill"
+          :class="pill.tone ? pill.tone : ''"
+        >
           <span v-if="pill.tone === 'active'" class="pill-dot" aria-hidden="true"></span>
           <span class="pill-label">{{ pill.label }}</span>
         </div>
       </div>
-
-      <button class="hero__scroll" type="button" data-cursor="Scroll" @click="scrollToWork">
-        <span class="hero__scroll-line" aria-hidden="true"></span>
-        <span>Scroll</span>
-      </button>
     </div>
+
+    <button class="hero__scroll" type="button" data-cursor="Scroll" @click="scrollToWork">
+      <span class="hero__scroll-line" aria-hidden="true"></span>
+      <span>Scroll</span>
+    </button>
   </section>
 </template>

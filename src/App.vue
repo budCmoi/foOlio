@@ -15,6 +15,7 @@ const route = useRoute()
 const ui = useUiState()
 const { startLenis, stopLenis } = useLenis()
 const transitionVeil = ref(null)
+const isHomeRoute = computed(() => route.name === 'home')
 const viewKey = computed(() => route.path)
 const loaderVisible = ui.loaderVisible
 
@@ -233,7 +234,7 @@ function onLeave(element, done) {
 </script>
 
 <template>
-  <div class="app-shell">
+  <div class="app-shell" :class="{ 'app-shell--home': isHomeRoute }">
     <div class="app-shell__backdrop" aria-hidden="true"></div>
     <div ref="transitionVeil" class="route-transition" aria-hidden="true">
       <div class="route-transition__panel route-transition__panel--left"></div>

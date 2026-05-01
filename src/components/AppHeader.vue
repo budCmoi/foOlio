@@ -11,9 +11,12 @@ const compact = ref(false)
 const menuOpen = ui.menuOpen
 const isHomeRoute = computed(() => route.path === '/')
 const isProjectRoute = computed(() => route.path.startsWith('/project/'))
+const themeActionLabel = computed(() => (ui.theme.value === 'dark' ? 'Light' : 'Dark'))
+const brandText = computed(() => (isProjectRoute.value ? 'm.ali' : siteProfile.handle))
 const desktopNavLinks = [
-  { label: 'Projets', to: { path: '/', hash: '#work' } },
-  { label: 'A propos', to: { path: '/', hash: '#about' } },
+  { label: 'Work', to: { path: '/', hash: '#work' } },
+  { label: 'About', to: { path: '/', hash: '#about' } },
+  { label: 'Contact', to: { path: '/', hash: '#contact' } },
 ]
 
 function syncCompactState() {
@@ -31,11 +34,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <header class="app-header" :class="{ 'is-compact': compact, 'is-open': menuOpen, 'is-secondary': !isHomeRoute }">
+  <header class="app-header" :class="{ 'is-home': isHomeRoute, 'is-compact': compact, 'is-open': menuOpen, 'is-secondary': !isHomeRoute }">
     <div class="app-header__inner">
       <RouterLink class="app-header__brand" :to="{ path: '/', hash: '#hero' }" data-cursor="Accueil" @click="ui.closeMenu">
-        <HeaderAvatarAnimation />
-        <span class="app-header__brand-text">{{ isProjectRoute ? 'm.ali' : siteProfile.handle }}</span>
+        <HeaderAvatarAnimation v-if="!isHomeRoute" />
+        <span class="app-header__brand-text">{{ brandText }}</span>
       </RouterLink>
 
       <nav class="app-header__nav" aria-label="Navigation principale">
@@ -54,6 +57,7 @@ onBeforeUnmount(() => {
       <div class="app-header__actions">
         <button class="theme-toggle" type="button" aria-label="Basculer le theme" data-cursor="Theme" @click="ui.toggleTheme">
           <span class="theme-toggle__icon" aria-hidden="true"></span>
+          <span class="theme-toggle__label">{{ themeActionLabel }}</span>
         </button>
 
         <button
