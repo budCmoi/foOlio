@@ -1,6 +1,5 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-import MagneticLink from '@/components/MagneticLink.vue'
 import { siteProfile } from '@/data/projects'
 import { createRevealTrigger, gsap, splitReveal, useGSAPContext } from '@/composables/useGSAP'
 
@@ -40,23 +39,6 @@ onBeforeUnmount(() => {
       <div>
         <p class="contact-panel__overline" data-contact-item>{{ siteProfile.contact.overline }}</p>
         <h2 ref="title" class="contact-panel__title">{{ siteProfile.contact.title }}</h2>
-      </div>
-    </div>
-
-    <div class="contact-panel__grid" data-contact-item>
-      <div class="contact-panel__mail">
-        <div>
-          <MagneticLink class="contact-panel__mail-link" :href="`mailto:${siteProfile.contact.email}`" cursor="Email">
-            {{ siteProfile.contact.email }}
-          </MagneticLink>
-          <span>{{ siteProfile.location }}</span>
-        </div>
-      </div>
-
-      <div class="contact-panel__links">
-        <a v-for="link in siteProfile.contact.links" :key="link.label" :href="link.href">
-          {{ link.label }}
-        </a>
       </div>
     </div>
 
