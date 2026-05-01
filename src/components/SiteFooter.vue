@@ -45,10 +45,10 @@ const currentYear = new Date().getFullYear()
   gap: 1.1rem;
   align-items: end;
   padding: 1rem clamp(1rem, 3vw, 1.8rem) 0;
-  border-top: 1px solid var(--border-strong, rgba(247, 242, 233, 0.2));
-  background:
-    linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--brown, #6b4c35) 8%, transparent) 100%);
-  color: var(--text, #f7f2e9);
+  border-top: 1px solid var(--border-strong, rgba(255, 255, 255, 0.2));
+  background: linear-gradient(180deg, transparent 0%, var(--surface-soft, rgba(255, 255, 255, 0.03)) 100%);
+  color: var(--text, #fff);
+  border-radius: var(--radius-lg, 1.6rem);
 }
 
 .site-footer__brand,
@@ -63,7 +63,7 @@ const currentYear = new Date().getFullYear()
   font-size: calc(0.58rem * 0.72);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text-soft, rgba(247, 242, 233, 0.62));
+  color: var(--muted, rgba(255, 255, 255, 0.62));
 }
 
 .site-footer__brand h2 {
@@ -74,7 +74,7 @@ const currentYear = new Date().getFullYear()
 
 .site-footer__brand p,
 .site-footer__links a {
-  color: var(--text, rgba(247, 242, 233, 0.88));
+  color: var(--text, rgba(255, 255, 255, 0.88));
   line-height: 1.45;
   font-size: calc(0.74rem * 0.72);
 }
@@ -91,8 +91,8 @@ const currentYear = new Date().getFullYear()
 }
 
 .site-footer__links a:hover {
-  color: var(--text, #f7f2e9);
-  border-color: color-mix(in srgb, var(--brown, #6b4c35) 60%, transparent);
+  color: var(--text, #fff);
+  border-color: var(--text, #fff);
 }
 
 .site-footer__meta {

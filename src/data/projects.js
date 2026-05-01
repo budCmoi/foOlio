@@ -5,10 +5,10 @@ export const siteProfile = {
   role: 'Designer frontend et motion',
   roleCaps: 'DESIGNER FRONTEND ET MOTION',
   location: 'Paris, France',
-  availability: 'Disponible pour des missions choisies en 2026',
+  availability: 'T3 2026 · 1 mission ouverte',
   heroIntro: 'Base a Paris, disponible a distance. Quatre ans a concevoir des interfaces, portfolios et lancements ou le mouvement sert d\'abord la clarte.',
   heroPills: [
-    { label: 'Disponible pour mission', tone: 'active' },
+    { label: 'T3 2026', tone: 'active' },
     { label: 'Paris, France' },
     { label: '4 ans d\'experience' },
   ],
