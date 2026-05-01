@@ -411,7 +411,7 @@ figure {
   background: rgba(0, 0, 0, 0.08);
 }
 
-.custom-cursor span {
+.custom-cursor > span {
   white-space: nowrap;
   font-size: calc(0.62rem * 0.72);
   font-weight: 700;
@@ -432,7 +432,7 @@ figure {
   padding: 0.6rem 0.95rem;
 }
 
-.custom-cursor.has-label span {
+.custom-cursor.has-label > span {
   opacity: 1;
   transform: translateY(0);
 }

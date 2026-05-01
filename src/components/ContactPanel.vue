@@ -8,7 +8,19 @@ const { add } = useGSAPContext(root)
 const copyState = ref('')
 let resetCopyState = null
 
-const contactLines = computed(() => [siteProfile.contact.overline, siteProfile.contact.title])
+const contactLines = computed(() => [
+  {
+    key: 'overline',
+    type: 'text',
+    text: siteProfile.contact.overline,
+  },
+  {
+    key: 'title-link',
+    type: 'link',
+    text: siteProfile.contact.titleLink,
+    suffix: siteProfile.contact.titleSuffix || '',
+  },
+])
 
 function copyEmail() {
   if (!navigator.clipboard?.writeText) {
@@ -55,12 +67,12 @@ onBeforeUnmount(() => {
     <p class="s-label" data-contact-item>{{ siteProfile.contact.eyebrow }}</p>
 
     <div class="contact-headline">
-      <span v-for="line in contactLines" :key="line" class="tl">
-        <span>
-          <a v-if="line === siteProfile.contact.title" :href="`mailto:${siteProfile.contact.email}`" data-cursor="Email" data-cursor-theme="accent">
-            {{ line }}
-          </a>
-          <template v-else>{{ line }}</template>
+      <span v-for="line in contactLines" :key="line.key" class="tl">
+        <span v-if="line.type === 'text'">{{ line.text }}</span>
+        <span v-else>
+          <a :href="`mailto:${siteProfile.contact.email}`" data-cursor="Email" data-cursor-theme="accent">
+            {{ line.text }}
+          </a>{{ line.suffix }}
         </span>
       </span>
     </div>

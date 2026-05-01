@@ -78,8 +78,9 @@ export const siteProfile = {
   },
   contact: {
     eyebrow: 'Prendre contact',
-    overline: 'Bonjour !',
-    title: 'Parlons d\'un projet qui doit vraiment marquer.',
+    overline: 'Un projet',
+    titleLink: 'parlons-en',
+    titleSuffix: ' ?',
     cta: 'Discutons',
     email: 'drame.ibou.07@gmail.com',
     links: [
