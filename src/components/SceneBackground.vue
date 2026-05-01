@@ -3,6 +3,7 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { isMobileViewport, isReducedMotion } from '@/composables/useGSAP'
 
 const root = ref(null)
+const TAU = Math.PI * 2
 
 let disposeScene = () => {}
 
@@ -10,299 +11,297 @@ function shouldSkipScene() {
   return typeof window === 'undefined' || isMobileViewport() || isReducedMotion()
 }
 
-function rgba(color, opacity) {
-  return `rgba(${color}, ${opacity})`
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value))
 }
 
-function pickColor(colors) {
-  return colors[Math.floor(Math.random() * colors.length)]
+function lerp(start, end, factor) {
+  return start + (end - start) * factor
 }
 
-function createGalaxies(width, height) {
+function rgba(value, opacity) {
+  return `rgba(${value}, ${value}, ${value}, ${opacity})`
+}
+
+function rotatePoint(x, y, angle) {
+  const cos = Math.cos(angle)
+  const sin = Math.sin(angle)
+
+  return {
+    x: x * cos - y * sin,
+    y: x * sin + y * cos,
+  }
+}
+
+function createBlobs(width, height) {
   const unit = Math.min(width, height)
 
   return [
     {
-      x: width * 0.5,
-      y: height * 0.46,
-      radius: unit * 0.3,
-      flatten: 0.58,
-      twist: 2.45,
-      arms: 3,
-      drift: 28,
-      rotationSpeed: 0.000026,
-      pulseSpeed: 0.082,
-      pulseOffset: 0.12,
-      glowColor: '143,214,255',
-      coreColor: '255,255,255',
-      accentColor: '215,255,118',
-      dustPalette: ['255,255,255', '143,214,255', '215,255,118'],
-      clouds: [
-        {
-          orbit: unit * 0.05,
-          sizeX: unit * 0.22,
-          sizeY: unit * 0.1,
-          speed: 0.22,
-          offset: 0,
-          color: '143,214,255',
-          opacity: 0.16,
-        },
-        {
-          orbit: unit * 0.08,
-          sizeX: unit * 0.18,
-          sizeY: unit * 0.09,
-          speed: -0.18,
-          offset: Math.PI * 0.74,
-          color: '215,255,118',
-          opacity: 0.12,
-        },
-        {
-          orbit: unit * 0.11,
-          sizeX: unit * 0.2,
-          sizeY: unit * 0.095,
-          speed: 0.15,
-          offset: Math.PI * 1.42,
-          color: '255,185,152',
-          opacity: 0.11,
-        },
-      ],
+      x: width * 0.22,
+      y: height * 0.3,
+      radius: unit * 0.34,
+      stretchX: 1.18,
+      stretchY: 0.86,
+      rotation: -0.34,
+      driftX: width * 0.055,
+      driftY: height * 0.04,
+      scrollX: width * 0.04,
+      scrollY: height * 0.16,
+      ampA: 0.13,
+      ampB: 0.06,
+      freqA: 2.2,
+      freqB: 4.9,
+      pointerPull: 0.08,
+      layerCount: 3,
+      phase: 0.12,
+      motionSpeed: 0.6,
+      driftAmpX: width * 0.02,
+      driftAmpY: height * 0.016,
+      scalePulse: 0.034,
+      phaseDrift: 0.24,
+      strokeWidth: 1.1,
     },
     {
-      x: width * 0.24,
-      y: height * 0.7,
-      radius: unit * 0.16,
-      flatten: 0.72,
-      twist: 2.1,
-      arms: 2,
-      drift: 16,
-      rotationSpeed: -0.000034,
-      pulseSpeed: 0.11,
-      pulseOffset: 0.48,
-      glowColor: '255,185,152',
-      coreColor: '255,255,255',
-      accentColor: '143,214,255',
-      dustPalette: ['255,255,255', '255,185,152', '143,214,255'],
-      clouds: [
-        {
-          orbit: unit * 0.036,
-          sizeX: unit * 0.13,
-          sizeY: unit * 0.065,
-          speed: -0.24,
-          offset: Math.PI * 0.24,
-          color: '255,185,152',
-          opacity: 0.15,
-        },
-        {
-          orbit: unit * 0.058,
-          sizeX: unit * 0.11,
-          sizeY: unit * 0.052,
-          speed: 0.17,
-          offset: Math.PI * 1.18,
-          color: '255,255,255',
-          opacity: 0.09,
-        },
-      ],
+      x: width * 0.56,
+      y: height * 0.56,
+      radius: unit * 0.42,
+      stretchX: 0.98,
+      stretchY: 1.08,
+      rotation: 0.2,
+      driftX: width * 0.04,
+      driftY: height * 0.055,
+      scrollX: -width * 0.03,
+      scrollY: -height * 0.12,
+      ampA: 0.1,
+      ampB: 0.08,
+      freqA: 2.8,
+      freqB: 5.4,
+      pointerPull: 0.09,
+      layerCount: 4,
+      phase: 1.24,
+      motionSpeed: 0.48,
+      driftAmpX: width * 0.024,
+      driftAmpY: height * 0.022,
+      scalePulse: 0.042,
+      phaseDrift: 0.21,
+      strokeWidth: 1,
     },
     {
-      x: width * 0.79,
-      y: height * 0.22,
-      radius: unit * 0.11,
-      flatten: 0.66,
-      twist: 1.8,
-      arms: 2,
-      drift: 14,
-      rotationSpeed: 0.000031,
-      pulseSpeed: 0.095,
-      pulseOffset: 0.76,
-      glowColor: '215,255,118',
-      coreColor: '255,255,255',
-      accentColor: '143,214,255',
-      dustPalette: ['255,255,255', '215,255,118', '143,214,255'],
-      clouds: [
-        {
-          orbit: unit * 0.028,
-          sizeX: unit * 0.095,
-          sizeY: unit * 0.046,
-          speed: 0.28,
-          offset: Math.PI * 0.42,
-          color: '215,255,118',
-          opacity: 0.14,
-        },
-        {
-          orbit: unit * 0.046,
-          sizeX: unit * 0.082,
-          sizeY: unit * 0.038,
-          speed: -0.19,
-          offset: Math.PI * 1.26,
-          color: '143,214,255',
-          opacity: 0.1,
-        },
-      ],
+      x: width * 0.82,
+      y: height * 0.26,
+      radius: unit * 0.24,
+      stretchX: 0.92,
+      stretchY: 1.16,
+      rotation: 0.56,
+      driftX: width * 0.06,
+      driftY: height * 0.03,
+      scrollX: -width * 0.055,
+      scrollY: height * 0.14,
+      ampA: 0.12,
+      ampB: 0.05,
+      freqA: 3.1,
+      freqB: 6,
+      pointerPull: 0.075,
+      layerCount: 3,
+      phase: 2.1,
+      motionSpeed: 0.72,
+      driftAmpX: width * 0.018,
+      driftAmpY: height * 0.014,
+      scalePulse: 0.03,
+      phaseDrift: 0.27,
+      strokeWidth: 0.95,
     },
   ]
 }
 
-function createOrbitStars(galaxies) {
-  return galaxies.flatMap((galaxy, galaxyIndex) => {
-    const count = galaxyIndex === 0 ? 186 : galaxyIndex === 1 ? 112 : 84
+function getPalette() {
+  const isLight = document.documentElement.dataset.theme === 'light'
 
-    return Array.from({ length: count }, (_, index) => {
-      const radiusRatio = Math.pow(Math.random(), 0.74)
-
-      return {
-        galaxyIndex,
-        armIndex: index % galaxy.arms,
-        orbitRadius: galaxy.radius * (0.16 + radiusRatio * 1.28),
-        radiusRatio,
-        phaseJitter: (Math.random() - 0.5) * (0.3 + (1 - radiusRatio) * 0.32),
-        axialShift: (Math.random() - 0.5) * galaxy.radius * 0.08,
-        size: 0.45 + Math.random() * (galaxyIndex === 0 ? 1.75 : 1.25),
-        speed: galaxy.rotationSpeed * (0.72 + Math.random() * 1.18),
-        opacity: 0.16 + Math.random() * 0.56,
-        color: pickColor(galaxy.dustPalette),
-        twinkleOffset: Math.random() * Math.PI * 2,
-        twinkleSpeed: 0.7 + Math.random() * 1.6,
-        wobble: 2 + Math.random() * 8,
-        wobbleOffset: Math.random() * Math.PI * 2,
-        halo: Math.random() > 0.8 ? 1.8 + Math.random() * 3.6 : 0,
-        streak: Math.random() > 0.74,
+  return isLight
+    ? {
+        composite: 'multiply',
+        fill: 10,
+        stroke: 16,
+        halo: 18,
+        fillAlpha: 0.12,
+        fillAlphaSoft: 0.06,
+        strokeAlpha: 0.14,
+        ringAlpha: 0.08,
       }
-    })
-  })
+    : {
+        composite: 'screen',
+        fill: 248,
+        stroke: 255,
+        halo: 230,
+        fillAlpha: 0.12,
+        fillAlphaSoft: 0.055,
+        strokeAlpha: 0.16,
+        ringAlpha: 0.1,
+      }
 }
 
-function createFieldStars(width, height) {
-  const palette = ['255,255,255', '143,214,255', '255,185,152', '215,255,118']
+function traceBlobPath(context, config) {
+  const {
+    centerX,
+    centerY,
+    radius,
+    stretchX,
+    stretchY,
+    rotation,
+    ampA,
+    ampB,
+    freqA,
+    freqB,
+    phaseA,
+    phaseB,
+    pointerAngle,
+    pointerMagnitude,
+    pointerPull,
+  } = config
 
-  return Array.from({ length: 240 }, () => ({
-    x: Math.random() * width,
-    y: Math.random() * height,
-    size: 0.25 + Math.random() * 1.3,
-    opacity: 0.08 + Math.random() * 0.28,
-    color: pickColor(palette),
-    twinkleOffset: Math.random() * Math.PI * 2,
-    twinkleSpeed: 0.45 + Math.random() * 1.4,
-    drift: 0.18 + Math.random() * 0.65,
-    floatX: 1.5 + Math.random() * 9,
-    floatY: 1.5 + Math.random() * 7,
-    halo: Math.random() > 0.95 ? 3 + Math.random() * 5.5 : 0,
-  }))
-}
+  const steps = 88
 
-function createComets(width, height) {
-  const palette = ['255,255,255', '143,214,255', '255,185,152', '215,255,118']
+  context.beginPath()
 
-  return Array.from({ length: 6 }, (_, index) => {
-    const fromLeft = index % 2 === 0
-    const startX = fromLeft
-      ? -width * (0.12 + Math.random() * 0.14)
-      : width * (1.08 + Math.random() * 0.12)
-    const startY = height * (0.04 + Math.random() * 0.54)
-    const endX = fromLeft
-      ? width * (0.74 + Math.random() * 0.26)
-      : -width * (0.08 + Math.random() * 0.18)
-    const endY = startY + height * (0.05 + Math.random() * 0.22)
+  for (let step = 0; step <= steps; step += 1) {
+    const angle = (step / steps) * TAU
+    const modulation = 1
+      + Math.sin(angle * freqA + phaseA) * ampA
+      + Math.cos(angle * freqB + phaseB) * ampB
+      + Math.cos(angle - pointerAngle) * pointerMagnitude * pointerPull
 
-    return {
-      startX,
-      startY,
-      endX,
-      endY,
-      duration: 1.6 + Math.random() * 2.2,
-      delay: 3.4 + Math.random() * 5.2,
-      offset: Math.random() * 9 + index * 0.9,
-      color: pickColor(palette),
-      opacity: 0.22 + Math.random() * 0.18,
-      headSize: 1.6 + Math.random() * 2.2,
-      trail: 140 + Math.random() * 210,
-      thickness: 0.8 + Math.random() * 1.15,
+    const localX = Math.cos(angle) * radius * stretchX * modulation
+    const localY = Math.sin(angle) * radius * stretchY * (1 + Math.sin(angle * 1.5 + phaseB) * ampA * 0.45) * modulation
+    const point = rotatePoint(localX, localY, rotation)
+    const x = centerX + point.x
+    const y = centerY + point.y
+
+    if (step === 0) {
+      context.moveTo(x, y)
     }
+    else {
+      context.lineTo(x, y)
+    }
+  }
+
+  context.closePath()
+}
+
+function drawLayeredBlob(context, blob, state, palette, depth) {
+  const depthRatio = depth / Math.max(blob.layerCount - 1, 1)
+  const autoPhase = state.time * blob.motionSpeed + blob.phase + depth * 0.42
+  const autoWaveA = Math.sin(autoPhase)
+  const autoWaveB = Math.cos(autoPhase * 0.82 + depth * 0.58)
+  const layerScale = 1
+    - depthRatio * 0.16
+    + state.scroll * 0.04 * (depth % 2 === 0 ? 1 : -1)
+    + autoWaveA * blob.scalePulse
+    + autoWaveB * blob.scalePulse * 0.42
+  const centerX = blob.x
+    + state.pointer.x * blob.driftX * (1 - depthRatio * 0.2)
+    + state.scroll * blob.scrollX * (depth % 2 === 0 ? 1 : -0.48)
+    + autoWaveA * blob.driftAmpX * (1 - depthRatio * 0.24)
+    + autoWaveB * blob.driftAmpX * 0.36
+  const centerY = blob.y
+    - state.pointer.y * blob.driftY * (1 - depthRatio * 0.2)
+    + state.scroll * blob.scrollY * (depth % 2 === 0 ? 1 : -0.34)
+    + autoWaveB * blob.driftAmpY * (1 - depthRatio * 0.24)
+    - autoWaveA * blob.driftAmpY * 0.34
+  const radius = blob.radius * layerScale
+  const rotation = blob.rotation
+    + state.scroll * (0.34 + depth * 0.08)
+    + state.pointer.x * 0.18
+    + autoWaveA * 0.22
+    - autoWaveB * 0.08
+  const phaseA = blob.phase
+    + state.scroll * TAU * (0.42 + depth * 0.08)
+    + state.pointer.x * 1.4
+    + state.time * blob.phaseDrift
+  const phaseB = blob.phase * 0.6
+    - state.scroll * TAU * (0.3 + depth * 0.06)
+    + state.pointer.y * 1.1
+    - state.time * blob.phaseDrift * 0.78
+  const pointerMagnitude = Math.hypot(state.pointer.x, state.pointer.y)
+  const pointerAngle = Math.atan2(state.pointer.y || 0.0001, state.pointer.x || 0.0001)
+
+  const halo = context.createRadialGradient(
+    centerX - state.pointer.x * radius * 0.22,
+    centerY - state.pointer.y * radius * 0.18,
+    radius * 0.1,
+    centerX,
+    centerY,
+    radius * 1.2,
+  )
+
+  halo.addColorStop(0, rgba(palette.halo, palette.fillAlphaSoft * (1 - depthRatio * 0.28)))
+  halo.addColorStop(0.5, rgba(palette.halo, palette.fillAlphaSoft * 0.34))
+  halo.addColorStop(1, rgba(palette.halo, 0))
+
+  context.fillStyle = halo
+  context.beginPath()
+  context.arc(centerX, centerY, radius * 1.14, 0, TAU)
+  context.fill()
+
+  traceBlobPath(context, {
+    centerX,
+    centerY,
+    radius,
+    stretchX: blob.stretchX,
+    stretchY: blob.stretchY,
+    rotation,
+    ampA: blob.ampA * (1 - depthRatio * 0.26),
+    ampB: blob.ampB * (1 - depthRatio * 0.12),
+    freqA: blob.freqA,
+    freqB: blob.freqB,
+    phaseA,
+    phaseB,
+    pointerAngle,
+    pointerMagnitude,
+    pointerPull: blob.pointerPull,
   })
-}
 
-function drawNebulaBlob(context, x, y, sizeX, sizeY, rotation, color, opacity) {
-  context.save()
-  context.translate(x, y)
-  context.rotate(rotation)
-  context.scale(1, sizeY / sizeX)
+  const fill = context.createRadialGradient(
+    centerX - state.pointer.x * radius * 0.24,
+    centerY - state.pointer.y * radius * 0.2,
+    radius * 0.12,
+    centerX,
+    centerY,
+    radius * 1.18,
+  )
 
-  const gradient = context.createRadialGradient(0, 0, 0, 0, 0, sizeX)
-  gradient.addColorStop(0, rgba(color, opacity))
-  gradient.addColorStop(0.52, rgba(color, opacity * 0.38))
-  gradient.addColorStop(1, rgba(color, 0))
+  fill.addColorStop(0, rgba(palette.fill, palette.fillAlpha * (1 - depthRatio * 0.18)))
+  fill.addColorStop(0.48, rgba(palette.fill, palette.fillAlphaSoft * (1.1 - depthRatio * 0.2)))
+  fill.addColorStop(1, rgba(palette.fill, 0))
 
-  context.fillStyle = gradient
-  context.beginPath()
-  context.arc(0, 0, sizeX, 0, Math.PI * 2)
+  context.fillStyle = fill
   context.fill()
-  context.restore()
-}
 
-function drawStarGlow(context, x, y, radius, color, opacity) {
-  const gradient = context.createRadialGradient(x, y, 0, x, y, radius)
-  gradient.addColorStop(0, rgba(color, opacity))
-  gradient.addColorStop(1, rgba(color, 0))
-
-  context.fillStyle = gradient
-  context.beginPath()
-  context.arc(x, y, radius, 0, Math.PI * 2)
-  context.fill()
-}
-
-function drawPulseRing(context, x, y, radiusX, radiusY, rotation, color, opacity) {
-  if (opacity <= 0) {
-    return
-  }
-
-  context.save()
-  context.strokeStyle = rgba(color, opacity)
-  context.lineWidth = 1
-  context.beginPath()
-  context.ellipse(x, y, radiusX, radiusY, rotation, 0, Math.PI * 2)
+  context.lineWidth = blob.strokeWidth - depthRatio * 0.2
+  context.strokeStyle = rgba(palette.stroke, palette.strokeAlpha * (1 - depthRatio * 0.22))
   context.stroke()
-  context.restore()
-}
 
-function drawComet(context, comet, elapsed, pointer) {
-  const cycle = comet.duration + comet.delay
-  const timeInCycle = (elapsed + comet.offset) % cycle
+  traceBlobPath(context, {
+    centerX,
+    centerY,
+    radius: radius * (0.74 - depthRatio * 0.06),
+    stretchX: blob.stretchX * 0.96,
+    stretchY: blob.stretchY * 0.96,
+    rotation: rotation * 1.08,
+    ampA: blob.ampA * 0.56,
+    ampB: blob.ampB * 0.38,
+    freqA: blob.freqA + 0.8,
+    freqB: blob.freqB - 0.7,
+    phaseA: phaseA * 1.06,
+    phaseB: phaseB * 0.82,
+    pointerAngle,
+    pointerMagnitude,
+    pointerPull: blob.pointerPull * 0.52,
+  })
 
-  if (timeInCycle > comet.duration) {
-    return
-  }
-
-  const progress = timeInCycle / comet.duration
-  const eased = 1 - Math.pow(1 - progress, 3)
-  const x = comet.startX + (comet.endX - comet.startX) * eased + pointer.x * 14
-  const y = comet.startY + (comet.endY - comet.startY) * eased - pointer.y * 10
-  const dx = comet.endX - comet.startX
-  const dy = comet.endY - comet.startY
-  const distance = Math.hypot(dx, dy) || 1
-  const tailX = x - (dx / distance) * comet.trail
-  const tailY = y - (dy / distance) * comet.trail
-  const fade = Math.sin(progress * Math.PI)
-
-  const gradient = context.createLinearGradient(x, y, tailX, tailY)
-  gradient.addColorStop(0, rgba(comet.color, comet.opacity * fade))
-  gradient.addColorStop(0.16, rgba(comet.color, comet.opacity * fade * 0.44))
-  gradient.addColorStop(1, rgba(comet.color, 0))
-
-  context.save()
-  context.strokeStyle = gradient
-  context.lineWidth = comet.thickness
-  context.lineCap = 'round'
-  context.beginPath()
-  context.moveTo(x, y)
-  context.lineTo(tailX, tailY)
+  context.lineWidth = 0.7
+  context.strokeStyle = rgba(palette.stroke, palette.ringAlpha * (1 - depthRatio * 0.2))
   context.stroke()
-  context.restore()
-
-  drawStarGlow(context, x, y, comet.headSize * 6.2, comet.color, comet.opacity * fade * 0.22)
-
-  context.fillStyle = rgba(comet.color, comet.opacity * fade)
-  context.beginPath()
-  context.arc(x, y, comet.headSize, 0, Math.PI * 2)
-  context.fill()
 }
 
 onMounted(() => {
@@ -322,13 +321,12 @@ onMounted(() => {
 
   const pointer = { x: 0, y: 0 }
   const targetPointer = { x: 0, y: 0 }
+  const scroll = { value: 0, target: 0 }
   let width = 0
   let height = 0
   let dpr = 1
-  let galaxies = []
-  let orbitStars = []
-  let fieldStars = []
-  let comets = []
+  let blobs = []
+  let frameId = 0
 
   const updateSize = () => {
     if (!root.value) {
@@ -337,7 +335,7 @@ onMounted(() => {
 
     width = root.value.clientWidth
     height = root.value.clientHeight
-    dpr = Math.min(window.devicePixelRatio || 1, 1.35)
+    dpr = Math.min(window.devicePixelRatio || 1, 1.6)
 
     canvas.width = Math.round(width * dpr)
     canvas.height = Math.round(height * dpr)
@@ -345,197 +343,55 @@ onMounted(() => {
     canvas.style.height = `${height}px`
 
     context.setTransform(dpr, 0, 0, dpr, 0, 0)
+    blobs = createBlobs(width, height)
+  }
 
-    galaxies = createGalaxies(width, height)
-    orbitStars = createOrbitStars(galaxies)
-    fieldStars = createFieldStars(width, height)
-    comets = createComets(width, height)
+  const updateScrollTarget = () => {
+    const maxScroll = Math.max(window.innerHeight * 2.2, 1)
+    scroll.target = clamp(window.scrollY / maxScroll, 0, 1.15)
   }
 
   updateSize()
+  updateScrollTarget()
 
   const resizeObserver = new ResizeObserver(updateSize)
   resizeObserver.observe(root.value)
 
   const onPointerMove = (event) => {
-    targetPointer.x = event.clientX / window.innerWidth - 0.5
-    targetPointer.y = event.clientY / window.innerHeight - 0.5
+    targetPointer.x = (event.clientX / window.innerWidth - 0.5) * 2
+    targetPointer.y = (event.clientY / window.innerHeight - 0.5) * 2
+  }
+
+  const onPointerLeave = () => {
+    targetPointer.x = 0
+    targetPointer.y = 0
   }
 
   window.addEventListener('pointermove', onPointerMove, { passive: true })
-
-  let frameId = 0
+  window.addEventListener('pointerleave', onPointerLeave)
+  window.addEventListener('scroll', updateScrollTarget, { passive: true })
 
   const animate = (time) => {
     const elapsed = time * 0.001
 
-    pointer.x += (targetPointer.x - pointer.x) * 0.032
-    pointer.y += (targetPointer.y - pointer.y) * 0.032
+    pointer.x = lerp(pointer.x, targetPointer.x, 0.08)
+    pointer.y = lerp(pointer.y, targetPointer.y, 0.08)
+    scroll.value = lerp(scroll.value, scroll.target, 0.08)
 
     context.clearRect(0, 0, width, height)
 
-    fieldStars.forEach((star) => {
-      const x = star.x
-        + Math.sin(elapsed * star.drift + star.twinkleOffset) * star.floatX
-        + pointer.x * star.drift * 16
-      const y = star.y
-        + Math.cos(elapsed * star.drift * 0.82 + star.twinkleOffset) * star.floatY
-        - pointer.y * star.drift * 12
-      const opacity = star.opacity * (0.7 + (Math.sin(elapsed * star.twinkleSpeed + star.twinkleOffset) + 1) * 0.17)
+    const palette = getPalette()
 
-      if (star.halo) {
-        drawStarGlow(context, x, y, star.halo, star.color, opacity * 0.22)
+    context.save()
+    context.globalCompositeOperation = palette.composite
+
+    blobs.forEach((blob) => {
+      for (let depth = 0; depth < blob.layerCount; depth += 1) {
+        drawLayeredBlob(context, blob, { pointer, scroll: scroll.value, time: elapsed }, palette, depth)
       }
-
-      context.fillStyle = rgba(star.color, opacity)
-      context.beginPath()
-      context.arc(x, y, star.size, 0, Math.PI * 2)
-      context.fill()
     })
 
-    const galaxyPositions = galaxies.map((galaxy, index) => ({
-      galaxy,
-      x: galaxy.x
-        + Math.sin(elapsed * 0.18 + index * 2.2) * 3.4
-        + pointer.x * galaxy.drift * (index % 2 === 0 ? 1 : -1),
-      y: galaxy.y
-        + Math.cos(elapsed * 0.16 + index * 1.7) * 2.6
-        - pointer.y * galaxy.drift * 0.92 * (index % 2 === 0 ? 1 : -1),
-    }))
-
-    galaxyPositions.forEach(({ galaxy, x, y }, index) => {
-      const corePulse = 0.92 + Math.sin(elapsed * 1.3 + galaxy.pulseOffset * Math.PI * 2) * 0.08
-      const gradient = context.createRadialGradient(
-        x,
-        y,
-        0,
-        x,
-        y,
-        galaxy.radius * 2.8 * corePulse,
-      )
-
-      gradient.addColorStop(0, rgba(galaxy.glowColor, 0.2))
-      gradient.addColorStop(0.42, rgba(galaxy.glowColor, 0.08))
-      gradient.addColorStop(1, rgba(galaxy.glowColor, 0))
-
-      context.fillStyle = gradient
-      context.beginPath()
-      context.arc(x, y, galaxy.radius * 2.55 * corePulse, 0, Math.PI * 2)
-      context.fill()
-
-      galaxy.clouds.forEach((cloud, cloudIndex) => {
-        const cloudAngle = elapsed * cloud.speed + cloud.offset
-        drawNebulaBlob(
-          context,
-          x + Math.cos(cloudAngle) * cloud.orbit,
-          y + Math.sin(cloudAngle) * cloud.orbit * galaxy.flatten,
-          cloud.sizeX,
-          cloud.sizeY,
-          cloudAngle * 0.6 + cloudIndex * 0.22,
-          cloud.color,
-          cloud.opacity,
-        )
-      })
-
-      drawStarGlow(context, x, y, galaxy.radius * 0.92, galaxy.coreColor, 0.12)
-      drawStarGlow(context, x, y, galaxy.radius * 0.42, galaxy.coreColor, 0.18)
-
-      const pulseA = (elapsed * galaxy.pulseSpeed + galaxy.pulseOffset) % 1
-      const pulseB = (pulseA + 0.48) % 1
-      drawPulseRing(
-        context,
-        x,
-        y,
-        galaxy.radius * (0.34 + pulseA * 1.28),
-        galaxy.radius * galaxy.flatten * (0.16 + pulseA * 0.52),
-        elapsed * galaxy.rotationSpeed * 1600,
-        galaxy.glowColor,
-        (1 - pulseA) * 0.12,
-      )
-      drawPulseRing(
-        context,
-        x,
-        y,
-        galaxy.radius * (0.28 + pulseB * 1.18),
-        galaxy.radius * galaxy.flatten * (0.14 + pulseB * 0.46),
-        -elapsed * galaxy.rotationSpeed * 1420,
-        galaxy.accentColor,
-        (1 - pulseB) * 0.09,
-      )
-
-      context.save()
-      context.strokeStyle = rgba(galaxy.accentColor, 0.16)
-      context.lineWidth = 0.85
-      context.setLineDash(index === 0 ? [8, 12] : [5, 10])
-      context.beginPath()
-      context.ellipse(
-        x,
-        y,
-        galaxy.radius * 1.18,
-        galaxy.radius * galaxy.flatten * 0.44,
-        elapsed * galaxy.rotationSpeed * 2200,
-        Math.PI * 0.16,
-        Math.PI * 0.84,
-      )
-      context.stroke()
-
-      context.strokeStyle = rgba(galaxy.glowColor, 0.14)
-      context.beginPath()
-      context.ellipse(
-        x,
-        y,
-        galaxy.radius * 1.02,
-        galaxy.radius * galaxy.flatten * 0.36,
-        -elapsed * galaxy.rotationSpeed * 1950,
-        Math.PI * 1.18,
-        Math.PI * 1.82,
-      )
-      context.stroke()
-      context.restore()
-    })
-
-    orbitStars.forEach((star) => {
-      const galaxy = galaxies[star.galaxyIndex]
-      const center = galaxyPositions[star.galaxyIndex]
-      const armAngle = star.armIndex * ((Math.PI * 2) / galaxy.arms)
-      const rotation = elapsed * star.speed * 1000
-      const spiralAngle = armAngle + rotation + star.phaseJitter + star.radiusRatio * galaxy.twist
-      const x = center.x
-        + Math.cos(spiralAngle) * star.orbitRadius
-        + Math.cos(elapsed * 0.72 + star.wobbleOffset) * star.wobble * 0.22
-      const y = center.y
-        + Math.sin(spiralAngle) * star.orbitRadius * galaxy.flatten
-        + Math.sin(elapsed * 0.9 + star.wobbleOffset) * star.wobble * 0.16
-        + star.axialShift
-      const opacity = star.opacity * (0.76 + (Math.sin(elapsed * star.twinkleSpeed + star.twinkleOffset) + 1) * 0.12)
-
-      if (star.halo) {
-        drawStarGlow(context, x, y, star.halo, star.color, opacity * 0.18)
-      }
-
-      if (star.streak && opacity > 0.22) {
-        context.save()
-        context.strokeStyle = rgba(star.color, opacity * 0.1)
-        context.lineWidth = 0.8
-        context.beginPath()
-        context.moveTo(x, y)
-        context.lineTo(
-          x - Math.cos(spiralAngle) * (7 + star.size * 4),
-          y - Math.sin(spiralAngle) * (4 + star.size * 3) * galaxy.flatten,
-        )
-        context.stroke()
-        context.restore()
-      }
-
-      context.fillStyle = rgba(star.color, opacity)
-      context.beginPath()
-      context.arc(x, y, star.size, 0, Math.PI * 2)
-      context.fill()
-    })
-
-    comets.forEach((comet) => {
-      drawComet(context, comet, elapsed, pointer)
-    })
+    context.restore()
 
     frameId = window.requestAnimationFrame(animate)
   }
@@ -545,6 +401,8 @@ onMounted(() => {
   disposeScene = () => {
     window.cancelAnimationFrame(frameId)
     window.removeEventListener('pointermove', onPointerMove)
+    window.removeEventListener('pointerleave', onPointerLeave)
+    window.removeEventListener('scroll', updateScrollTarget)
     resizeObserver.disconnect()
 
     if (root.value?.contains(canvas)) {

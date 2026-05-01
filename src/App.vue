@@ -5,6 +5,7 @@ import AppHeader from '@/components/AppHeader.vue'
 import CustomCursor from '@/components/CustomCursor.vue'
 import FullscreenMenu from '@/components/FullscreenMenu.vue'
 import LoadingScreen from '@/components/LoadingScreen.vue'
+import SceneBackground from '@/components/SceneBackground.vue'
 import SiteFooter from '@/components/SiteFooter.vue'
 import { gsap, ScrollTrigger } from '@/composables/useGSAP'
 import { scrollToTarget, useLenis } from '@/composables/useLenis'
@@ -237,6 +238,7 @@ function onLeave(element, done) {
 <template>
   <div class="app-shell" :class="{ 'app-shell--home': isHomeRoute }">
     <div class="app-shell__backdrop" aria-hidden="true"></div>
+    <SceneBackground v-if="isHomeRoute" />
     <div ref="transitionVeil" class="route-transition" aria-hidden="true">
       <div class="route-transition__panel route-transition__panel--left"></div>
       <div class="route-transition__panel route-transition__panel--right"></div>

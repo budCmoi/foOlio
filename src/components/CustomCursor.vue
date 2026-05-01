@@ -63,7 +63,9 @@ onMounted(() => {
   })
 
   onMove = (event) => {
-    const target = event.target.closest('[data-cursor]')
+    const target = event.target instanceof Element
+      ? event.target.closest('[data-cursor]')
+      : null
 
     active.value = true
     xTo(event.clientX)
