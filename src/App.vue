@@ -238,7 +238,7 @@ function onLeave(element, done) {
 <template>
   <div class="app-shell" :class="{ 'app-shell--home': isHomeRoute }">
     <div class="app-shell__backdrop" aria-hidden="true"></div>
-    <SceneBackground v-if="isHomeRoute" />
+    <SceneBackground />
     <div ref="transitionVeil" class="route-transition" aria-hidden="true">
       <div class="route-transition__panel route-transition__panel--left"></div>
       <div class="route-transition__panel route-transition__panel--right"></div>

@@ -8,7 +8,7 @@ const TAU = Math.PI * 2
 let disposeScene = () => {}
 
 function shouldSkipScene() {
-  return typeof window === 'undefined' || isMobileViewport() || isReducedMotion()
+  return typeof window === 'undefined' || isReducedMotion()
 }
 
 function clamp(value, min, max) {
@@ -33,7 +33,7 @@ function rotatePoint(x, y, angle) {
   }
 }
 
-function createBlobs(width, height) {
+function createBlobs(width, height, compactMode = false) {
   const unit = Math.min(width, height)
 
   return [
@@ -53,7 +53,7 @@ function createBlobs(width, height) {
       freqA: 2.2,
       freqB: 4.9,
       pointerPull: 0.08,
-      layerCount: 3,
+      layerCount: compactMode ? 2 : 3,
       phase: 0.12,
       motionSpeed: 0.6,
       driftAmpX: width * 0.02,
@@ -78,7 +78,7 @@ function createBlobs(width, height) {
       freqA: 2.8,
       freqB: 5.4,
       pointerPull: 0.09,
-      layerCount: 4,
+      layerCount: compactMode ? 3 : 4,
       phase: 1.24,
       motionSpeed: 0.48,
       driftAmpX: width * 0.024,
@@ -103,7 +103,7 @@ function createBlobs(width, height) {
       freqA: 3.1,
       freqB: 6,
       pointerPull: 0.075,
-      layerCount: 3,
+      layerCount: compactMode ? 2 : 3,
       phase: 2.1,
       motionSpeed: 0.72,
       driftAmpX: width * 0.018,
@@ -333,9 +333,11 @@ onMounted(() => {
       return
     }
 
+    const compactMode = isMobileViewport()
+
     width = root.value.clientWidth
     height = root.value.clientHeight
-    dpr = Math.min(window.devicePixelRatio || 1, 1.6)
+    dpr = Math.min(window.devicePixelRatio || 1, compactMode ? 1 : 1.6)
 
     canvas.width = Math.round(width * dpr)
     canvas.height = Math.round(height * dpr)
@@ -343,7 +345,7 @@ onMounted(() => {
     canvas.style.height = `${height}px`
 
     context.setTransform(dpr, 0, 0, dpr, 0, 0)
-    blobs = createBlobs(width, height)
+    blobs = createBlobs(width, height, compactMode)
   }
 
   const updateScrollTarget = () => {

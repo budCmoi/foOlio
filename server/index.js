@@ -19,6 +19,13 @@ import {
   normalizeGeneratedDraftPayload,
 } from './project-draft-ai.js'
 
+try {
+  process.loadEnvFile?.()
+}
+catch {
+  // Render injecte les variables d environnement directement ; en local, .env peut etre absent.
+}
+
 const prisma = new PrismaClient()
 const app = express()
 const currentFilePath = fileURLToPath(import.meta.url)

@@ -40,7 +40,7 @@ const projectFacts = computed(() => {
     { label: 'Annee', value: project.value.year || 'En cours' },
     { label: 'Type', value: projectType.value || 'Etude de cas' },
     { label: 'Role', value: project.value.role },
-  ]
+  ].filter((fact) => fact.value)
 })
 const projectMetrics = computed(() => {
   if (!project.value) {
@@ -134,11 +134,15 @@ onBeforeUnmount(() => {
           <p class="section-tag" data-project-intro>Etude de cas</p>
           <h1 ref="title" class="project-hero__title">{{ project.title }}</h1>
 
-          <div class="project-hero__facts" data-project-intro>
-            <div v-for="fact in projectFacts" :key="fact.label" class="project-fact">
-              <span class="project-fact__label">{{ fact.label }}</span>
-              <strong>{{ fact.value }}</strong>
-            </div>
+          <div class="project-hero__facts-block" data-project-intro>
+            <p class="project-hero__facts-title">Infos projet</p>
+
+            <dl class="project-hero__facts">
+              <div v-for="fact in projectFacts" :key="fact.label" class="project-fact">
+                <dt class="project-fact__label">{{ fact.label }}</dt>
+                <dd class="project-fact__value">{{ fact.value }}</dd>
+              </div>
+            </dl>
           </div>
 
           <p class="project-hero__statement" data-project-intro>{{ project.statement }}</p>

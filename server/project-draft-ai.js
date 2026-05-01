@@ -6,6 +6,13 @@ import {
   improveGeneratedSection,
 } from '../src/composables/useProjectBriefGenerator.js'
 
+try {
+  process.loadEnvFile?.()
+}
+catch {
+  // Le studio garde des fallbacks si aucun .env local n est present.
+}
+
 const OPENAI_API_BASE = cleanText(process.env.OPENAI_API_BASE) || 'https://api.openai.com/v1'
 const OPENAI_API_KEY = cleanText(process.env.OPENAI_API_KEY)
 const OPENAI_MODEL = cleanText(process.env.OPENAI_MODEL) || 'gpt-4.1-mini'
