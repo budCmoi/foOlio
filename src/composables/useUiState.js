@@ -21,7 +21,7 @@ function resolvePreferredTheme() {
     return storedTheme
   }
 
-  return 'dark'
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
 }
 
 function applyTheme(nextTheme) {

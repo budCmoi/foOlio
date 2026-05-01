@@ -13,6 +13,7 @@ const root = ref(null)
 const { add } = useGSAPContext(root)
 const { projects, projectsHydrated } = useProjects()
 const hasProjects = computed(() => projects.value.length > 0)
+const projectCount = computed(() => String(projects.value.length).padStart(2, '0'))
 const showEmptyProjectsState = computed(() => projectsHydrated.value && !hasProjects.value)
 
 onMounted(() => {
@@ -21,15 +22,18 @@ onMounted(() => {
     const workListTargets = Array.from(workList?.children || [])
     const workEmpty = root.value?.querySelector('.work-empty')
     const workEmptyTargets = Array.from(workEmpty?.children || [])
+    const workHeaderTargets = Array.from(root.value?.querySelectorAll('.work-home__header > *, .work-home__intro') || [])
 
-    gsap.from('.work-section__heading > *', {
-      y: 34,
-      autoAlpha: 0,
-      stagger: 0.08,
-      duration: 0.72,
-      ease: 'power3.out',
-      scrollTrigger: createRevealTrigger('.work-section__heading'),
-    })
+    if (workHeaderTargets.length) {
+      gsap.from(workHeaderTargets, {
+        y: 34,
+        autoAlpha: 0,
+        stagger: 0.08,
+        duration: 0.72,
+        ease: 'power3.out',
+        scrollTrigger: createRevealTrigger('.work-home__header'),
+      })
+    }
 
     if (workListTargets.length) {
       gsap.from(workListTargets, {
@@ -62,14 +66,16 @@ onMounted(() => {
     <HorizontalShowcase />
 
     <section id="work" class="work-section page-block" data-page-intro>
-      <div class="section-heading work-section__heading">
-        <p class="section-tag">Projets choisis</p>
-
+      <div class="s-header work-home__header">
         <div>
-          <h2>Projets</h2>
-          <p>{{ siteProfile.workIntro }}</p>
+          <p class="s-label">Projets choisis</p>
+          <h2 class="s-title">Projets</h2>
         </div>
+
+        <span class="s-count">{{ hasProjects ? projectCount : '00' }}</span>
       </div>
+
+      <p class="work-home__intro">{{ siteProfile.workIntro }}</p>
 
       <div v-if="hasProjects" class="work-list">
         <ProjectCard

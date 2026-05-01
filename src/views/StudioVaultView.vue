@@ -598,7 +598,7 @@ function downloadBackup() {
   const anchor = document.createElement('a')
 
   anchor.href = url
-  anchor.download = 'mohamedali-custom-projects.json'
+  anchor.download = 'ibra-drm-custom-projects.json'
   anchor.click()
 
   URL.revokeObjectURL(url)
@@ -926,7 +926,7 @@ async function handleImport(event) {
           <strong>{{ siteProfile.name }}</strong>
           <p>{{ siteProfile.role }} · {{ siteProfile.location }}</p>
           <a :href="`mailto:${siteProfile.contact.email}`">{{ siteProfile.contact.email }}</a>
-          <span>© {{ currentYear }} Mohamed Ali</span>
+          <span>© {{ currentYear }} {{ siteProfile.name }}</span>
         </div>
       </aside>
     </section>

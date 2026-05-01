@@ -251,7 +251,7 @@ function onLeave(element, done) {
           <component :is="Component" :key="viewKey" />
         </Transition>
       </RouterView>
-      <SiteFooter />
+      <SiteFooter v-if="!isHomeRoute" />
     </div>
   </div>
 </template>

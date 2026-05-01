@@ -7,6 +7,7 @@ const root = ref(null)
 const title = ref(null)
 const { add } = useGSAPContext(root)
 const cleanups = []
+const currentYear = new Date().getFullYear()
 
 onMounted(() => {
   add(() => {
@@ -33,15 +34,26 @@ onBeforeUnmount(() => {
 
 <template>
   <section id="contact" ref="root" class="contact-panel page-block" data-page-intro>
-    <p class="section-tag" data-contact-item>{{ siteProfile.contact.eyebrow }}</p>
+    <p class="s-label" data-contact-item>{{ siteProfile.contact.eyebrow }}</p>
 
-    <div class="contact-panel__hero">
+    <div class="contact-home__headline">
       <div>
-        <p class="contact-panel__overline" data-contact-item>{{ siteProfile.contact.overline }}</p>
-        <h2 ref="title" class="contact-panel__title">{{ siteProfile.contact.title }}</h2>
+        <p class="contact-home__overline" data-contact-item>{{ siteProfile.contact.overline }}</p>
+        <h2 ref="title" class="contact-home__title">{{ siteProfile.contact.title }}</h2>
       </div>
     </div>
 
-    <p class="contact-panel__footer" data-contact-item>© 2026 Mohamed Ali · {{ siteProfile.role }}</p>
+    <div class="contact-home__footer" data-contact-item>
+      <div class="contact-home__meta">
+        <a class="contact-home__email" :href="`mailto:${siteProfile.contact.email}`">{{ siteProfile.contact.email }}</a>
+        <p>{{ siteProfile.location }}</p>
+      </div>
+
+      <div class="contact-home__links">
+        <a v-for="link in siteProfile.contact.links" :key="link.label" :href="link.href">{{ link.label }}</a>
+      </div>
+    </div>
+
+    <p class="contact-home__copy" data-contact-item>© {{ currentYear }} {{ siteProfile.name }} · {{ siteProfile.role }}</p>
   </section>
 </template>
