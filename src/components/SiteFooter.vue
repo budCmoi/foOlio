@@ -20,7 +20,7 @@ const currentYear = new Date().getFullYear()
       </div>
 
       <div class="site-footer__meta">
-        <span>© {{ currentYear }} {{ siteProfile.name }}</span>
+        <span>© {{ currentYear }} Mohamed Ali</span>
         <span>{{ siteProfile.availability }}</span>
       </div>
     </div>

@@ -74,15 +74,13 @@ watch(() => props.visible, (isVisible) => {
 <template>
   <div ref="screen" class="loading-screen" :class="{ 'is-visible': visible }">
     <div class="loading-screen__inner">
-      <p class="loading-screen__label">Chargement du portfolio</p>
       <h2 class="loading-screen__title">
         <span v-for="word in nameWords" :key="word" class="word">{{ word }}</span>
       </h2>
-      <div class="loading-screen__progress">
+      <div class="loading-screen__bar-wrap">
         <div class="loading-screen__bar">
           <span ref="bar"></span>
         </div>
-        <span>{{ progress }}%</span>
       </div>
     </div>
   </div>

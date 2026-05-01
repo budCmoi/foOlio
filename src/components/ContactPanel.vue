@@ -1,34 +1,52 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { siteProfile } from '@/data/projects'
-import { createRevealTrigger, gsap, splitReveal, useGSAPContext } from '@/composables/useGSAP'
+import { createRevealTrigger, gsap, useGSAPContext } from '@/composables/useGSAP'
 
 const root = ref(null)
-const title = ref(null)
 const { add } = useGSAPContext(root)
-const cleanups = []
-const currentYear = new Date().getFullYear()
+const copyState = ref('')
+let resetCopyState = null
+
+const contactLines = computed(() => [siteProfile.contact.overline, siteProfile.contact.title])
+
+function copyEmail() {
+  if (!navigator.clipboard?.writeText) {
+    return
+  }
+
+  navigator.clipboard.writeText(siteProfile.contact.email).then(() => {
+    copyState.value = 'copied'
+    window.clearTimeout(resetCopyState)
+    resetCopyState = window.setTimeout(() => {
+      copyState.value = ''
+    }, 1800)
+  }).catch(() => {})
+}
 
 onMounted(() => {
   add(() => {
-    const intro = gsap.timeline({
+    gsap.timeline({
       scrollTrigger: createRevealTrigger(root.value),
     })
-
-    cleanups.push(splitReveal(title.value, intro, { position: 0 }))
-
-    intro.from('[data-contact-item]', {
+      .from('.contact-headline .tl span', {
+        y: '110%',
+        stagger: 0.1,
+        duration: 0.9,
+        ease: 'power3.out',
+      })
+      .from('[data-contact-item]', {
       y: 26,
       autoAlpha: 0,
       stagger: 0.08,
       duration: 0.72,
       ease: 'power3.out',
-    }, 0.12)
+      }, 0.14)
   })
 })
 
 onBeforeUnmount(() => {
-  cleanups.splice(0).forEach((cleanup) => cleanup?.())
+  window.clearTimeout(resetCopyState)
 })
 </script>
 
@@ -36,24 +54,41 @@ onBeforeUnmount(() => {
   <section id="contact" ref="root" class="contact-panel page-block" data-page-intro>
     <p class="s-label" data-contact-item>{{ siteProfile.contact.eyebrow }}</p>
 
-    <div class="contact-home__headline">
-      <div>
-        <p class="contact-home__overline" data-contact-item>{{ siteProfile.contact.overline }}</p>
-        <h2 ref="title" class="contact-home__title">{{ siteProfile.contact.title }}</h2>
-      </div>
+    <div class="contact-headline">
+      <span v-for="line in contactLines" :key="line" class="tl">
+        <span>
+          <a v-if="line === siteProfile.contact.title" :href="`mailto:${siteProfile.contact.email}`" data-cursor="Email" data-cursor-theme="accent">
+            {{ line }}
+          </a>
+          <template v-else>{{ line }}</template>
+        </span>
+      </span>
     </div>
 
-    <div class="contact-home__footer" data-contact-item>
-      <div class="contact-home__meta">
-        <a class="contact-home__email" :href="`mailto:${siteProfile.contact.email}`">{{ siteProfile.contact.email }}</a>
+    <div class="contact-footer" data-contact-item>
+      <div class="cf-left">
+        <div class="cf-email-row">
+          <p>{{ siteProfile.contact.email }}</p>
+          <button class="copy-btn" :class="{ copied: copyState === 'copied' }" type="button" aria-label="Copier l'email" data-cursor="Copier" @click="copyEmail">
+            <svg v-if="copyState !== 'copied'" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4.5" y="4.5" width="7" height="7" rx="1.2"/>
+              <path d="M1.5 8.5V2.5a1 1 0 0 1 1-1h6"/>
+            </svg>
+            <svg v-else width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 7l3.5 3.5L11 3"/>
+            </svg>
+          </button>
+        </div>
         <p>{{ siteProfile.location }}</p>
       </div>
 
-      <div class="contact-home__links">
-        <a v-for="link in siteProfile.contact.links" :key="link.label" :href="link.href">{{ link.label }}</a>
+      <div class="cf-right">
+        <a v-for="link in siteProfile.contact.links" :key="link.href" :href="link.href" data-cursor="Link" data-cursor-theme="accent">
+          {{ link.label }}
+        </a>
       </div>
     </div>
 
-    <p class="contact-home__copy" data-contact-item>© {{ currentYear }} {{ siteProfile.name }} · {{ siteProfile.role }}</p>
+    <p class="copy">© 2026 {{ siteProfile.name }} · {{ siteProfile.role }}</p>
   </section>
 </template>

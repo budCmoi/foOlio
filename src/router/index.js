@@ -1,8 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { findProjectById, privateStudioPath } from '@/composables/useProjects'
-import { siteProfile } from '@/data/projects'
 
-const homeTitle = `${siteProfile.name} | Portfolio frontend motion premium`
+const homeTitle = 'Mohamed Ali | Portfolio frontend motion premium'
 let pendingScrollInstruction = null
 
 export function consumePendingScrollInstruction() {
@@ -30,7 +29,7 @@ const router = createRouter({
       meta: {
         title: (route) => {
           const project = findProjectById(route.params.id)
-          return project ? `${project.title} | ${siteProfile.name}` : `Projet | ${siteProfile.name}`
+          return project ? `${project.title} | Mohamed Ali` : 'Projet | Mohamed Ali'
         },
       },
     },
@@ -39,7 +38,7 @@ const router = createRouter({
       name: 'studio-vault',
       component: () => import('@/views/StudioVaultView.vue'),
       meta: {
-        title: `Atelier prive | ${siteProfile.name}`,
+        title: 'Atelier prive | Mohamed Ali',
       },
     },
     {
@@ -47,7 +46,7 @@ const router = createRouter({
       name: 'not-found',
       component: () => import('@/views/NotFoundView.vue'),
       meta: {
-        title: `Introuvable | ${siteProfile.name}`,
+        title: 'Introuvable | Mohamed Ali',
       },
     },
   ],

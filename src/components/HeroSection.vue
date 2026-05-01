@@ -12,72 +12,76 @@ function scrollToWork() {
 }
 
 onMounted(() => {
-  if (isReducedMotion()) {
-    return
-  }
-
   add(() => {
-    gsap.set('.hero__title-line', {
-      yPercent: 42,
-      autoAlpha: 0,
-    })
+    if (isReducedMotion()) {
+      gsap.set('.scroll-hint', { autoAlpha: 1 })
+      return
+    }
 
     gsap.timeline({
       defaults: {
-        ease: 'power2.out',
+        ease: 'power3.out',
       },
     })
-      .from('.hero__eyebrow', {
-        y: 14,
-        autoAlpha: 0,
-        duration: 0.3,
+      .from('.hero-eyebrow span', {
+        y: '110%',
+        duration: 0.72,
       })
-      .to('.hero__title-line', {
-        yPercent: 0,
-        autoAlpha: 1,
-        stagger: 0.05,
-        duration: 0.48,
+      .from('.hero-title .tl span', {
+        y: '110%',
+        stagger: 0.1,
+        duration: 0.96,
       }, 0.06)
-      .from('.hero__lead, .hero-pill, .hero__scroll', {
+      .from('.hero-desc span', {
         y: 18,
         autoAlpha: 0,
-        stagger: 0.04,
-        duration: 0.34,
-      }, 0.14)
+        duration: 0.62,
+      }, 0.26)
+      .from('.hero-right .pill', {
+        x: 24,
+        autoAlpha: 0,
+        stagger: 0.08,
+        duration: 0.46,
+      }, 0.34)
+      .to('.scroll-hint', {
+        autoAlpha: 1,
+        duration: 0.4,
+      }, 0.84)
   })
 })
 </script>
 
 <template>
   <section id="hero" ref="root" class="hero page-block" data-page-intro>
-    <p class="hero__eyebrow">{{ siteProfile.roleCaps || siteProfile.role }}</p>
+    <p class="hero-eyebrow"><span>{{ siteProfile.role }}</span></p>
 
-    <h1 class="hero__title" :aria-label="siteProfile.name">
-      <span v-for="line in siteProfile.headline" :key="line" class="hero__title-wrap">
-        <span class="hero__title-line">{{ line }}</span>
+    <h1 class="hero-title" :aria-label="siteProfile.name">
+      <span v-for="line in siteProfile.headline" :key="line" class="tl">
+        <span>{{ line }}</span>
       </span>
     </h1>
 
-    <div class="hero__bottom">
-      <div class="hero__support">
-        <p class="hero__lead">{{ siteProfile.heroIntro }}</p>
-      </div>
+    <div class="hero-bottom">
+      <p class="hero-desc">
+        <span>{{ siteProfile.heroIntro }}</span>
+      </p>
 
       <div class="hero-right">
         <div
           v-for="pill in siteProfile.heroPills"
           :key="pill.label"
-          class="pill hero-pill"
-          :class="pill.tone ? pill.tone : ''"
+          class="pill"
+          :class="pill.tone === 'active' ? 'available' : ''"
+          :data-cursor="pill.label"
         >
           <span v-if="pill.tone === 'active'" class="pill-dot" aria-hidden="true"></span>
-          <span class="pill-label">{{ pill.label }}</span>
+          <span>{{ pill.label }}</span>
         </div>
       </div>
     </div>
 
-    <button class="hero__scroll" type="button" data-cursor="Scroll" @click="scrollToWork">
-      <span class="hero__scroll-line" aria-hidden="true"></span>
+    <button class="scroll-hint" type="button" aria-label="Defiler vers les projets" data-cursor="Scroll" @click="scrollToWork">
+      <span class="sh-line" aria-hidden="true"></span>
       <span>Scroll</span>
     </button>
   </section>

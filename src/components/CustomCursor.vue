@@ -1,5 +1,6 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed } from 'vue'
 import { gsap } from '@/composables/useGSAP'
 import { useUiState } from '@/composables/useUiState'
 
@@ -11,6 +12,7 @@ const transitioning = ui.transitioning
 const cursorText = ui.cursorText
 const cursorTheme = ui.cursorTheme
 const menuOpen = ui.menuOpen
+const displayLabel = computed(() => cursorText.value || 'Guest')
 
 let onMove = null
 let onDown = null
@@ -62,15 +64,14 @@ onMounted(() => {
 
   onMove = (event) => {
     const target = event.target.closest('[data-cursor]')
-    const halfSize = getHalfSize()
 
     active.value = true
-    xTo(event.clientX - halfSize)
-    yTo(event.clientY - halfSize)
+    xTo(event.clientX)
+    yTo(event.clientY)
 
     if (target) {
       ui.setCursor(
-        target.getAttribute('data-cursor') || 'Ouvrir',
+        target.getAttribute('data-cursor') || 'Open',
         target.getAttribute('data-cursor-theme') || 'accent',
       )
       setCursorScale(1.08)
@@ -112,11 +113,19 @@ onBeforeUnmount(() => {
       {
         'is-active': active,
         'is-hidden': loaderVisible || transitioning || menuOpen,
-        'has-label': Boolean(cursorText),
+        'is-hovering': Boolean(cursorText),
       },
     ]"
     aria-hidden="true"
   >
-    <span>{{ cursorText }}</span>
+    <div class="custom-cursor__arrow">
+      <svg width="22" height="26" viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 2L2 21L6.8 16.2L10.4 24L13.4 22.6L9.8 14.8L17 14.8L2 2Z" fill="white" stroke="#0C0C0B" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="custom-cursor__label">
+      <span class="custom-cursor__dot"></span>
+      <span class="custom-cursor__text">{{ displayLabel }}</span>
+    </div>
   </div>
 </template>

@@ -1,12 +1,12 @@
 export const siteProfile = {
-  name: 'ibra.drm',
-  handle: 'ibra.drm',
-  headline: ['ibra.', 'drm'],
+  name: 'Mohamed Ali',
+  handle: 'mohamedali',
+  headline: ['Mohamed', 'Ali'],
   role: 'Designer frontend et motion',
   roleCaps: 'DESIGNER FRONTEND ET MOTION',
   location: 'Paris, France',
   availability: 'T3 2026 · 1 mission ouverte',
-  heroIntro: 'Base a Paris, disponible a distance. Quatre ans a concevoir des interfaces, portfolios et lancements ou le mouvement sert d\'abord la clarte, sous la signature ibra.drm.',
+  heroIntro: 'Base a Paris, disponible a distance. Quatre ans a concevoir des interfaces, portfolios et lancements ou le mouvement sert d\'abord la clarte.',
   heroPills: [
     { label: 'T3 2026', tone: 'active' },
     { label: 'Paris, France' },

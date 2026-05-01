@@ -8,22 +8,22 @@ const { add } = useGSAPContext(root)
 
 onMounted(() => {
   add(() => {
-    gsap.from('.about-home__bio > *', {
+    gsap.from('.about-bio > *', {
       y: 32,
       autoAlpha: 0,
       stagger: 0.08,
       duration: 0.72,
       ease: 'power3.out',
-      scrollTrigger: createRevealTrigger('.about-home__bio'),
+      scrollTrigger: createRevealTrigger('.about-bio'),
     })
 
-    gsap.from('.about-home__block', {
+    gsap.from('.about-side > div', {
       y: 44,
       autoAlpha: 0,
       stagger: 0.1,
       duration: 0.76,
       ease: 'power3.out',
-      scrollTrigger: createRevealTrigger('.about-home__side', { start: 'top 78%' }),
+      scrollTrigger: createRevealTrigger('.about-side', { start: 'top 78%' }),
     })
   })
 })
@@ -31,56 +31,63 @@ onMounted(() => {
 
 <template>
   <section id="about" ref="root" class="about-section page-block" data-page-intro>
-    <div class="s-header about-home__header">
+    <div class="s-header">
       <div>
         <p class="s-label">Mon parcours</p>
-        <h2 class="s-title">A propos</h2>
+        <h2 class="s-title"><span class="tl"><span>About</span></span></h2>
       </div>
     </div>
 
-    <div class="about-home__grid">
-      <div class="about-home__bio">
+    <div class="about-grid">
+      <div class="about-bio">
         <p v-for="paragraph in siteProfile.about.paragraphs" :key="paragraph">
           {{ paragraph }}
         </p>
+
+        <a class="cv-btn" :href="`mailto:${siteProfile.contact.email}`" data-cursor="Contact">
+          {{ siteProfile.contact.cta }}
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12L12 2M12 2H4M12 2V10"/>
+          </svg>
+        </a>
       </div>
 
-      <div class="about-home__side">
-        <section class="about-home__block">
+      <div class="about-side">
+        <div>
           <h3 class="detail-h">Experience</h3>
 
-          <ul class="about-home__list">
-            <li v-for="entry in siteProfile.about.experience" :key="`${entry.company}-${entry.period}`" class="about-home__item">
-              <div class="about-home__text">
-                <strong class="about-home__title">{{ entry.company }}</strong>
-                <span class="about-home__subtitle">{{ entry.role }}</span>
+          <ul class="exp-list">
+            <li v-for="entry in siteProfile.about.experience" :key="`${entry.company}-${entry.period}`" class="exp-item">
+              <div class="ei-l">
+                <span class="ei-co">{{ entry.company }}</span>
+                <span class="ei-role">{{ entry.role }}</span>
               </div>
-              <span class="about-home__meta">{{ entry.period }}</span>
+              <span class="ei-yr">{{ entry.period }}</span>
             </li>
           </ul>
-        </section>
+        </div>
 
-        <section class="about-home__block">
+        <div>
           <h3 class="detail-h">Reperes</h3>
 
-          <ul class="about-home__list">
-            <li v-for="item in siteProfile.about.highlights" :key="`${item.title}-${item.note}`" class="about-home__item">
-              <div class="about-home__text">
-                <strong class="about-home__title">{{ item.title }}</strong>
-                <span class="about-home__subtitle">{{ item.subtitle }}</span>
+          <ul class="awards-list">
+            <li v-for="item in siteProfile.about.highlights" :key="`${item.title}-${item.note}`" class="award-item">
+              <div class="aw-l">
+                <span class="aw-title">{{ item.title }}</span>
+                <span class="aw-issuer">{{ item.subtitle }}</span>
               </div>
-              <span class="about-home__meta">{{ item.note }}</span>
+              <span class="aw-yr">{{ item.note }}</span>
             </li>
           </ul>
-        </section>
+        </div>
 
-        <section class="about-home__block">
+        <div>
           <h3 class="detail-h">Competences</h3>
 
-          <div class="about-home__skills">
-            <span v-for="skill in siteProfile.about.skills" :key="skill" class="about-home__skill">{{ skill }}</span>
+          <div class="skills-row">
+            <span v-for="skill in siteProfile.about.skills" :key="skill" class="skill-pill">{{ skill }}</span>
           </div>
-        </section>
+        </div>
       </div>
     </div>
   </section>
