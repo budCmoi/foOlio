@@ -2,7 +2,6 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
-import CustomCursor from '@/components/CustomCursor.vue'
 import FullscreenMenu from '@/components/FullscreenMenu.vue'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import SceneBackground from '@/components/SceneBackground.vue'
@@ -244,7 +243,6 @@ function onLeave(element, done) {
       <div class="route-transition__panel route-transition__panel--right"></div>
       <p class="route-transition__label">{{ transitionLabel }}</p>
     </div>
-    <CustomCursor />
     <LoadingScreen :visible="loaderVisible" @complete="ui.completeLoading" />
     <AppHeader />
     <FullscreenMenu />
