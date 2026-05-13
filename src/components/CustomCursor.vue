@@ -33,13 +33,11 @@ onMounted(() => {
   const getHalfSize = () => cursor.value?.offsetWidth / 2 || 8
 
   const xTo = gsap.quickTo(cursor.value, 'x', {
-    duration: 0.06,
-    ease: 'none',
+    duration: 0,
   })
 
   const yTo = gsap.quickTo(cursor.value, 'y', {
-    duration: 0.06,
-    ease: 'none',
+    duration: 0,
   })
 
   const scaleXTo = gsap.quickTo(cursor.value, 'scaleX', {
