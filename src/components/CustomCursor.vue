@@ -66,8 +66,7 @@ onMounted(() => {
       : null
 
     active.value = true
-    xTo(event.clientX)
-    yTo(event.clientY)
+    gsap.set(cursor.value, { x: event.clientX, y: event.clientY })
 
     if (target) {
       ui.setCursor(
