@@ -23,38 +23,25 @@ onMounted(() => {
   const state = { value: 0 }
 
   gsap.timeline({
-    defaults: {
-      ease: 'power2.out',
-    },
+    defaults: { ease: 'power2.out' },
     onComplete: () => {
-      if (hasCompleted) {
-        return
-      }
-
+      if (hasCompleted) return
       hasCompleted = true
       emit('complete')
     },
   })
-    .from('.loading-screen__title .word', {
-      y: 18,
-      autoAlpha: 0,
-      stagger: 0.04,
-      duration: 0.42,
-    })
     .to(state, {
       value: 100,
-      duration: 0.72,
+      duration: 0.5,
       onUpdate: () => {
         progress.value = Math.round(state.value)
       },
-    }, 0.15)
-    .fromTo(bar.value, {
-      scaleX: 0,
-    }, {
+    })
+    .fromTo(bar.value, { scaleX: 0 }, {
       scaleX: 1,
       transformOrigin: '0% 50%',
-      duration: 0.72,
-    }, 0.15)
+      duration: 0.5,
+    }, 0)
 })
 
 watch(() => props.visible, (isVisible) => {

@@ -2,51 +2,19 @@
 import { onMounted, ref } from 'vue'
 import { siteProfile } from '@/data/projects'
 import { gsap, isReducedMotion, useGSAPContext } from '@/composables/useGSAP'
-import { scrollToTarget } from '@/composables/useLenis'
 
 const root = ref(null)
 const { add } = useGSAPContext(root)
 
-function scrollToWork() {
-  scrollToTarget('#work', { offset: -96, force: true })
-}
-
 onMounted(() => {
   add(() => {
-    if (isReducedMotion()) {
-      gsap.set('.scroll-hint', { autoAlpha: 1 })
-      return
-    }
+    if (isReducedMotion()) return
 
-    gsap.timeline({
-      defaults: {
-        ease: 'power3.out',
-      },
+    gsap.from('.hero-eyebrow span, .hero-title .tl span, .hero-desc span, .hero-right .pill', {
+      autoAlpha: 0,
+      duration: 0.4,
+      ease: 'power2.out',
     })
-      .from('.hero-eyebrow span', {
-        y: '110%',
-        duration: 0.72,
-      })
-      .from('.hero-title .tl span', {
-        y: '110%',
-        stagger: 0.1,
-        duration: 0.96,
-      }, 0.06)
-      .from('.hero-desc span', {
-        y: 18,
-        autoAlpha: 0,
-        duration: 0.62,
-      }, 0.26)
-      .from('.hero-right .pill', {
-        x: 24,
-        autoAlpha: 0,
-        stagger: 0.08,
-        duration: 0.46,
-      }, 0.34)
-      .to('.scroll-hint', {
-        autoAlpha: 1,
-        duration: 0.4,
-      }, 0.84)
   })
 })
 </script>
@@ -80,9 +48,5 @@ onMounted(() => {
       </div>
     </div>
 
-    <button class="scroll-hint" type="button" aria-label="Defiler vers les projets" data-cursor="Scroll" @click="scrollToWork">
-      <span class="sh-line" aria-hidden="true"></span>
-      <span>Scroll</span>
-    </button>
   </section>
 </template>

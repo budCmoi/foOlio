@@ -35,11 +35,10 @@ onMounted(() => {
   add(() => {
     cards.value.forEach((card) => {
       gsap.from(card, {
-        y: 24,
         autoAlpha: 0,
-        duration: 0.42,
+        duration: 0.3,
         ease: 'power2.out',
-        scrollTrigger: createRevealTrigger(card, { start: 'top 88%' }),
+        scrollTrigger: createRevealTrigger(card, { start: 'top 90%' }),
       })
     })
   })

@@ -3608,52 +3608,6 @@ body::after {
   50% { opacity: 0.4; }
 }
 
-.scroll-hint {
-  position: absolute;
-  top: 110px;
-  right: 44px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  opacity: 0;
-  color: inherit;
-  border: 0;
-  background: none;
-}
-
-.scroll-hint span {
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--muted);
-  writing-mode: vertical-lr;
-}
-
-.sh-line {
-  position: relative;
-  width: 1px;
-  height: 64px;
-  background: var(--border);
-  overflow: hidden;
-}
-
-.sh-line::after {
-  content: '';
-  position: absolute;
-  top: -100%;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--accent);
-  animation: shline 2.4s ease infinite;
-}
-
-@keyframes shline {
-  0% { top: -100%; }
-  100% { top: 100%; }
-}
-
 .marquee-wrap {
   overflow: hidden;
   padding: 14px 0;
@@ -4226,12 +4180,6 @@ body::after {
     align-items: flex-start;
   }
 
-  .scroll-hint {
-    top: auto;
-    right: 24px;
-    bottom: 56px;
-  }
-
   .page--home .work-section,
   .page--home .about-section,
   .page--home .contact-panel {
@@ -4287,7 +4235,6 @@ body::after {
 
 @media (prefers-reduced-motion: reduce) {
   .marquee-track,
-  .sh-line::after,
   .pill-dot {
     animation: none;
   }

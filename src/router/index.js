@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { findProjectById, privateStudioPath } from '@/composables/useProjects'
 
-const homeTitle = 'ibr. drame | Portfolio frontend motion premium'
+const homeTitle = 'ibr. drame | Développeur fullstack & IA'
 let pendingScrollInstruction = null
 
 export function consumePendingScrollInstruction() {

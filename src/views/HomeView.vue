@@ -23,33 +23,27 @@ onMounted(() => {
     const workEmptyTargets = Array.from(workEmpty?.children || [])
 
     gsap.from('.work-section .s-header > *', {
-      y: 34,
       autoAlpha: 0,
-      stagger: 0.08,
-      duration: 0.72,
-      ease: 'power3.out',
+      duration: 0.3,
+      ease: 'power2.out',
       scrollTrigger: createRevealTrigger('.work-section .s-header'),
     })
 
     if (workListTargets.length) {
       gsap.from(workListTargets, {
-        y: 62,
         autoAlpha: 0,
-        stagger: 0.1,
-        duration: 0.86,
-        ease: 'power3.out',
-        scrollTrigger: createRevealTrigger(workList, { start: 'top 78%' }),
+        duration: 0.4,
+        ease: 'power2.out',
+        scrollTrigger: createRevealTrigger(workList, { start: 'top 80%' }),
       })
     }
 
     if (workEmptyTargets.length) {
       gsap.from(workEmptyTargets, {
-        y: 36,
         autoAlpha: 0,
-        stagger: 0.08,
-        duration: 0.72,
-        ease: 'power3.out',
-        scrollTrigger: createRevealTrigger(workEmpty, { start: 'top 80%' }),
+        duration: 0.3,
+        ease: 'power2.out',
+        scrollTrigger: createRevealTrigger(workEmpty, { start: 'top 82%' }),
       })
     }
   })

@@ -8,22 +8,11 @@ const { add } = useGSAPContext(root)
 
 onMounted(() => {
   add(() => {
-    gsap.from('.about-bio > *', {
-      y: 32,
+    gsap.from('.about-bio > *, .about-side > div', {
       autoAlpha: 0,
-      stagger: 0.08,
-      duration: 0.72,
-      ease: 'power3.out',
+      duration: 0.35,
+      ease: 'power2.out',
       scrollTrigger: createRevealTrigger('.about-bio'),
-    })
-
-    gsap.from('.about-side > div', {
-      y: 44,
-      autoAlpha: 0,
-      stagger: 0.1,
-      duration: 0.76,
-      ease: 'power3.out',
-      scrollTrigger: createRevealTrigger('.about-side', { start: 'top 78%' }),
     })
   })
 })

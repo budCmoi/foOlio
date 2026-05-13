@@ -38,22 +38,12 @@ function copyEmail() {
 
 onMounted(() => {
   add(() => {
-    gsap.timeline({
+    gsap.from('.contact-headline .tl span, [data-contact-item]', {
+      autoAlpha: 0,
+      duration: 0.35,
+      ease: 'power2.out',
       scrollTrigger: createRevealTrigger(root.value),
     })
-      .from('.contact-headline .tl span', {
-        y: '110%',
-        stagger: 0.1,
-        duration: 0.9,
-        ease: 'power3.out',
-      })
-      .from('[data-contact-item]', {
-      y: 26,
-      autoAlpha: 0,
-      stagger: 0.08,
-      duration: 0.72,
-      ease: 'power3.out',
-      }, 0.14)
   })
 })
 
