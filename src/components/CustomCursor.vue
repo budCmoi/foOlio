@@ -33,23 +33,23 @@ onMounted(() => {
   const getHalfSize = () => cursor.value?.offsetWidth / 2 || 8
 
   const xTo = gsap.quickTo(cursor.value, 'x', {
-    duration: 0.22,
-    ease: 'power3.out',
+    duration: 0.06,
+    ease: 'none',
   })
 
   const yTo = gsap.quickTo(cursor.value, 'y', {
-    duration: 0.22,
-    ease: 'power3.out',
+    duration: 0.06,
+    ease: 'none',
   })
 
   const scaleXTo = gsap.quickTo(cursor.value, 'scaleX', {
-    duration: 0.18,
-    ease: 'power3.out',
+    duration: 0.12,
+    ease: 'power2.out',
   })
 
   const scaleYTo = gsap.quickTo(cursor.value, 'scaleY', {
-    duration: 0.18,
-    ease: 'power3.out',
+    duration: 0.12,
+    ease: 'power2.out',
   })
 
   const setCursorScale = (value) => {
@@ -84,8 +84,8 @@ onMounted(() => {
     setCursorScale(1)
   }
 
-  onDown = () => setCursorScale(0.88)
-  onUp = () => setCursorScale(ui.cursorText.value ? 1.08 : 1)
+  onDown = () => setCursorScale(0.92)
+  onUp = () => setCursorScale(ui.cursorText.value ? 1.04 : 1)
   onLeave = () => {
     active.value = false
     ui.clearCursor()
