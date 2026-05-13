@@ -3164,10 +3164,7 @@ body::after {
 }
 
 @media (pointer: fine) {
-  body,
-  body * {
-    cursor: none !important;
-  }
+  /* curseur OS natif conservé */
 }
 
 @media (pointer: coarse) {
@@ -3359,8 +3356,8 @@ body::after {
 
 .custom-cursor__label {
   position: absolute;
-  top: 18px;
-  left: 16px;
+  top: 16px;
+  left: 12px;
   display: flex;
   align-items: center;
   gap: 5px;

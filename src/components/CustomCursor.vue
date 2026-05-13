@@ -120,11 +120,6 @@ onBeforeUnmount(() => {
     ]"
     aria-hidden="true"
   >
-    <div class="custom-cursor__arrow">
-      <svg width="22" height="26" viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M2 2L2 21L6.8 16.2L10.4 24L13.4 22.6L9.8 14.8L17 14.8L2 2Z" fill="white" stroke="#0C0C0B" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>
-      </svg>
-    </div>
     <div class="custom-cursor__label">
       <span class="custom-cursor__dot"></span>
       <span class="custom-cursor__text">{{ displayLabel }}</span>
